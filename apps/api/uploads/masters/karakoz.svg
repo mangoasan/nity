@@ -1,0 +1,8 @@
+﻿<svg width="800" height="1000" viewBox="0 0 800 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="1000" fill="#DCE5F2"/>
+  <circle cx="400" cy="360" r="170" fill="#355A8A" fill-opacity="0.16"/>
+  <circle cx="400" cy="330" r="110" fill="#355A8A" fill-opacity="0.24"/>
+  <path d="M210 760C210 632.975 312.975 530 440 530H360C487.025 530 590 632.975 590 760V820H210V760Z" fill="#355A8A" fill-opacity="0.22"/>
+  <text x="400" y="392" text-anchor="middle" font-family="Georgia, serif" font-size="180" fill="#355A8A">К</text>
+  <text x="400" y="910" text-anchor="middle" font-family="Georgia, serif" font-size="52" fill="#355A8A">Каракоз</text>
+</svg>

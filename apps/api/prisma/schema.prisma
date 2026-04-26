@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
+enum ClassLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ALL_LEVELS
+}
+
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  ATTENDED
+  NO_SHOW
+}
+
+enum PTRequestStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+model User {
+  id           String       @id @default(cuid())
+  name         String
+  email        String       @unique
+  passwordHash String?
+  role         Role         @default(USER)
+  authProvider AuthProvider @default(EMAIL)
+  googleId     String?      @unique
+  avatarUrl    String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  bookings   Booking[]
+  ptRequests PersonalTrainingRequest[]
+}
+
+model YogaMaster {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  photoUrl    String?
+  shortBio    String?
+  fullBio     String?
+  specialties String[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  scheduleSlots ScheduleSlot[]
+}
+
+model YogaClassType {
+  id              String     @id @default(cuid())
+  titleRu         String
+  titleEn         String
+  titleKk         String
+  descriptionRu   String?
+  descriptionEn   String?
+  descriptionKk   String?
+  durationMinutes Int
+  level           ClassLevel @default(ALL_LEVELS)
+  isActive        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  scheduleSlots ScheduleSlot[]
+}
+
+model ScheduleSlot {
+  id            String   @id @default(cuid())
+  masterId      String
+  classTypeId   String
+  weekday       Weekday
+  startTime     String
+  endTime       String
+  capacity      Int      @default(15)
+  locationLabel String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  master    YogaMaster    @relation(fields: [masterId], references: [id])
+  classType YogaClassType @relation(fields: [classTypeId], references: [id])
+  bookings  Booking[]
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  userId         String
+  scheduleSlotId String
+  bookingDate    DateTime
+  status         BookingStatus @default(CONFIRMED)
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id])
+  scheduleSlot ScheduleSlot @relation(fields: [scheduleSlotId], references: [id])
+
+  @@unique([userId, scheduleSlotId, bookingDate])
+}
+
+model PersonalTrainingRequest {
+  id            String          @id @default(cuid())
+  userId        String?
+  name          String
+  email         String
+  phone         String?
+  preferredTime String?
+  goal          String?
+  message       String?
+  status        PTRequestStatus @default(NEW)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  user User? @relation(fields: [userId], references: [id])
+}

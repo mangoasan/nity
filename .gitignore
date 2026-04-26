@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+apps/*/node_modules/
+
+# Build output
+dist/
+apps/*/dist/
+.next/
+apps/*/.next/
+out/
+build/
+coverage/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+!.env.example
+apps/*/.env
+apps/*/.env.*
+!apps/*/.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Local tooling
+.codex-run/
+.vscode/
+.idea/
+.vercel/
+.wrangler/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local compose overrides and accidental source media
+docker-compose.override.yml
+WhatsApp Image*

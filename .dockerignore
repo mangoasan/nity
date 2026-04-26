@@ -1,0 +1,14 @@
+node_modules
+apps/*/node_modules
+apps/*/.next
+apps/*/dist
+.codex-run
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+apps/*/.env
+apps/*/.env.*
+npm-debug.log
+docker-compose.override.yml

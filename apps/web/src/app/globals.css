@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #4978BC;
+  --cream: #E8DCC4;
+  --cream-light: #F5F0E8;
+  --text: #1a1a1a;
+  --text-muted: #6b6b6b;
+  --border: #e0d8cc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: var(--text);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar on horizontally-scrollable elements while keeping scroll */
+.overflow-x-auto {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.overflow-x-auto::-webkit-scrollbar {
+  display: none;
+}
+
+.font-sans {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #fff;
+    --foreground: #1a1a1a;
+  }
+}
