@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   description:
     'Nity — премиальная студия йоги в Астане на улице Жошы хан, 1. Расписание занятий, запись к мастерам, персональные тренировки.',
   icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
+    icon: '/nity.png',
+    apple: '/nity.png',
   },
 };
 

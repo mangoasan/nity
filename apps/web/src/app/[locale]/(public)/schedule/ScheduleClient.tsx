@@ -23,7 +23,7 @@ function getNextDateForWeekday(weekday: string): string {
   const target = dayMap[weekday];
   const current = today.getDay();
   let diff = target - current;
-  if (diff <= 0) diff += 7;
+  if (diff < 0) diff += 7;
   const date = new Date(today);
   date.setDate(today.getDate() + diff);
   return date.toISOString().split('T')[0];

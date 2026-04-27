@@ -38,5 +38,5 @@ Copy-Item .env.example .env
 
 ## Тестовые аккаунты
 
-- администратор: `admin@nity.kz / admin123456`
+- администратор: `admin@nity.kz / Rsq4dwyQ`
 - пользователь: `user@nity.kz / user123456`
