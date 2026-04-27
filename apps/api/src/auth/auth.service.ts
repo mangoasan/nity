@@ -19,7 +19,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  private signToken(userId: string, email: string) {
+  private signToken(userId: string, email: string | null) {
     return this.jwtService.sign({ sub: userId, email });
   }
 
