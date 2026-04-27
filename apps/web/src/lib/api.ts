@@ -173,6 +173,13 @@ export const adminApi = {
       confirmedBookings: number;
     }>('/admin/dashboard'),
   getUsers: () => api.get<AdminUser[]>('/admin/users'),
+  createUser: (data: {
+    name: string;
+    email?: string;
+    phone?: string;
+    password: string;
+    role?: 'USER' | 'ADMIN';
+  }) => api.post<AdminUser>('/admin/users', data),
   grantClassPass: (userId: string, template: ClassPassTemplate) =>
     api.post<ClassPass>(`/admin/users/${userId}/class-pass`, { template }),
 };

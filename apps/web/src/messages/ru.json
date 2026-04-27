@@ -198,7 +198,16 @@
     "filterMaster": "Мастер",
     "filterUser": "Пользователь",
     "filterAll": "Все",
-    "resetFilters": "Сбросить"
+    "resetFilters": "Сбросить",
+    "createUser": "Добавить пользователя",
+    "createUserTitle": "Новый пользователь",
+    "email": "Email",
+    "emailOptional": "Email (необязательно)",
+    "phoneOptional": "Телефон (необязательно)",
+    "password": "Пароль",
+    "passwordMin": "Минимум 6 символов",
+    "emailOrPhoneRequired": "Укажите email или номер телефона",
+    "userCreated": "Пользователь создан"
   },
   "common": {
     "loading": "Загрузка...",

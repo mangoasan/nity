@@ -4,11 +4,40 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role, ClassPassTemplate } from '@prisma/client';
-import { IsEnum } from 'class-validator';
+import {
+  IsEnum,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEmail,
+  MinLength,
+} from 'class-validator';
 
 class GrantPassDto {
   @IsEnum(ClassPassTemplate)
   template: ClassPassTemplate;
+}
+
+class CreateUserAdminDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @IsString()
+  @MinLength(6)
+  password: string;
+
+  @IsEnum(Role)
+  @IsOptional()
+  role?: Role;
 }
 
 @Controller('admin')
@@ -25,6 +54,11 @@ export class AdminController {
   @Get('users')
   getUsers() {
     return this.adminService.getUsers();
+  }
+
+  @Post('users')
+  createUser(@Body() dto: CreateUserAdminDto) {
+    return this.adminService.createUser(dto);
   }
 
   @Post('users/:id/class-pass')

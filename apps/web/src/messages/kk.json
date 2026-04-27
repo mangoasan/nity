@@ -198,7 +198,16 @@
     "filterMaster": "Шебер",
     "filterUser": "Пайдаланушы",
     "filterAll": "Барлығы",
-    "resetFilters": "Тазарту"
+    "resetFilters": "Тазарту",
+    "createUser": "Пайдаланушы қосу",
+    "createUserTitle": "Жаңа пайдаланушы",
+    "email": "Email",
+    "emailOptional": "Email (міндетті емес)",
+    "phoneOptional": "Телефон (міндетті емес)",
+    "password": "Құпия сөз",
+    "passwordMin": "Кемінде 6 таңба",
+    "emailOrPhoneRequired": "Email немесе телефон нөмірін енгізіңіз",
+    "userCreated": "Пайдаланушы құрылды"
   },
   "common": {
     "loading": "Жүктелуде...",

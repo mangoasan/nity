@@ -1,6 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
-import { ClassPassTemplate } from '@prisma/client';
+import { ClassPassTemplate, Role, AuthProvider } from '@prisma/client';
 
 const PASS_CLASSES: Record<string, number | null> = {
   TRIAL: 1,
@@ -90,6 +96,40 @@ export class AdminService {
           : null,
       };
     });
+  }
+
+  async createUser(dto: {
+    name: string;
+    email?: string;
+    phone?: string;
+    password: string;
+    role?: Role;
+  }) {
+    if (!dto.email && !dto.phone) {
+      throw new BadRequestException('Email or phone is required');
+    }
+
+    if (dto.email) {
+      const existing = await this.prisma.user.findUnique({
+        where: { email: dto.email },
+      });
+      if (existing) throw new ConflictException('Email already in use');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 12);
+    const user = await this.prisma.user.create({
+      data: {
+        name: dto.name,
+        email: dto.email ?? null,
+        phone: dto.phone ?? null,
+        passwordHash,
+        role: dto.role ?? Role.USER,
+        authProvider: AuthProvider.EMAIL,
+      },
+    });
+
+    const { passwordHash: _, ...safe } = user;
+    return safe;
   }
 
   async grantClassPass(userId: string, template: ClassPassTemplate) {

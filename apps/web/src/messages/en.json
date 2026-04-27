@@ -198,7 +198,16 @@
     "filterMaster": "Master",
     "filterUser": "User",
     "filterAll": "All",
-    "resetFilters": "Reset"
+    "resetFilters": "Reset",
+    "createUser": "Add user",
+    "createUserTitle": "New user",
+    "email": "Email",
+    "emailOptional": "Email (optional)",
+    "phoneOptional": "Phone (optional)",
+    "password": "Password",
+    "passwordMin": "At least 6 characters",
+    "emailOrPhoneRequired": "Provide email or phone number",
+    "userCreated": "User created"
   },
   "common": {
     "loading": "Loading...",

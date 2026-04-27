@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { AdminUser, adminApi, ClassPassTemplate } from '@/lib/api';
-import { X } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 
 const PASS_TEMPLATES: { value: ClassPassTemplate; labelKey: string }[] = [
   { value: 'TRIAL', labelKey: 'passTrial' },
@@ -12,6 +12,27 @@ const PASS_TEMPLATES: { value: ClassPassTemplate; labelKey: string }[] = [
   { value: 'UNLIMITED_MONTH', labelKey: 'passUnlimitedMonth' },
 ];
 
+const ROLES: { value: 'USER' | 'ADMIN'; label: string }[] = [
+  { value: 'USER', label: 'USER' },
+  { value: 'ADMIN', label: 'ADMIN' },
+];
+
+interface CreateUserForm {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: 'USER' | 'ADMIN';
+}
+
+const EMPTY_FORM: CreateUserForm = {
+  name: '',
+  email: '',
+  phone: '',
+  password: '',
+  role: 'USER',
+};
+
 export default function AdminUsersPage() {
   const t = useTranslations('admin');
   const locale = useLocale();
@@ -19,10 +40,19 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
+
+  // Grant pass state
   const [grantTarget, setGrantTarget] = useState<AdminUser | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ClassPassTemplate>('TRIAL');
   const [granting, setGranting] = useState(false);
   const [grantSuccess, setGrantSuccess] = useState('');
+
+  // Create user state
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState<CreateUserForm>(EMPTY_FORM);
+  const [createError, setCreateError] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [createSuccess, setCreateSuccess] = useState(false);
 
   const reload = () =>
     adminApi.getUsers().then((data) => setUsers(data)).catch((err) =>
@@ -40,7 +70,7 @@ export default function AdminUsersPage() {
     const q = query.trim().toLowerCase();
     if (!q) return users;
     return users.filter((u) =>
-      [u.name, u.email, u.phone || '', u.role, u.authProvider].some((v) =>
+      [u.name, u.email ?? '', u.phone || '', u.role, u.authProvider].some((v) =>
         v.toLowerCase().includes(q),
       ),
     );
@@ -69,6 +99,43 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleCreateSubmit = async () => {
+    setCreateError('');
+    if (!createForm.name.trim()) {
+      setCreateError(t('name') + ' — ' + t('emailOrPhoneRequired').toLowerCase());
+      return;
+    }
+    if (!createForm.email.trim() && !createForm.phone.trim()) {
+      setCreateError(t('emailOrPhoneRequired'));
+      return;
+    }
+    if (createForm.password.length < 6) {
+      setCreateError(t('passwordMin'));
+      return;
+    }
+    setCreating(true);
+    try {
+      await adminApi.createUser({
+        name: createForm.name.trim(),
+        email: createForm.email.trim() || undefined,
+        phone: createForm.phone.trim() || undefined,
+        password: createForm.password,
+        role: createForm.role,
+      });
+      setCreateSuccess(true);
+      await reload();
+      setTimeout(() => {
+        setShowCreate(false);
+        setCreateForm(EMPTY_FORM);
+        setCreateSuccess(false);
+      }, 1500);
+    } catch (err: any) {
+      setCreateError(err.message || 'Failed to create user');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const passLabel = (user: AdminUser) => {
     if (!user.activePass) return null;
     if (user.activePass.type === 'unlimited') {
@@ -86,12 +153,22 @@ export default function AdminUsersPage() {
         <h1 className="text-2xl sm:text-3xl" style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}>
           {t('users')}
         </h1>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('searchUsers')}
-          className="w-full sm:w-72 rounded-lg border border-[#e0d8cc] bg-white px-4 py-2 text-sm outline-none transition-colors focus:border-[#4978BC]"
-        />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('searchUsers')}
+            className="w-full sm:w-64 rounded-lg border border-[#e0d8cc] bg-white px-4 py-2 text-sm outline-none transition-colors focus:border-[#4978BC]"
+          />
+          <button
+            onClick={() => { setShowCreate(true); setCreateForm(EMPTY_FORM); setCreateError(''); setCreateSuccess(false); }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm text-white whitespace-nowrap"
+            style={{ background: '#4978BC' }}
+          >
+            <Plus size={15} />
+            {t('createUser')}
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -131,7 +208,7 @@ export default function AdminUsersPage() {
                     >
                       <td className="px-4 py-3">
                         <div className="font-medium text-[#1a1a1a]">{user.name}</div>
-                        <div className="text-xs text-[#9b9b9b]">{user.email}</div>
+                        <div className="text-xs text-[#9b9b9b]">{user.email || '—'}</div>
                       </td>
                       <td className="px-4 py-3 text-[#6b6b6b] text-xs">{user.phone || '—'}</td>
                       <td className="px-4 py-3">
@@ -194,7 +271,7 @@ export default function AdminUsersPage() {
             <div className="p-6 space-y-4">
               <div>
                 <div className="text-sm font-medium">{grantTarget.name}</div>
-                <div className="text-xs text-[#9b9b9b]">{grantTarget.email}</div>
+                <div className="text-xs text-[#9b9b9b]">{grantTarget.email || grantTarget.phone || '—'}</div>
               </div>
 
               {grantSuccess ? (
@@ -229,6 +306,115 @@ export default function AdminUsersPage() {
                       style={{ background: '#4978BC' }}
                     >
                       {granting ? '...' : t('save')}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create User Modal */}
+      {showCreate && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.4)' }}
+        >
+          <div className="w-full max-w-sm rounded-2xl" style={{ background: '#fff' }}>
+            <div className="flex items-center justify-between p-6 border-b border-[#e0d8cc]">
+              <h2 className="text-lg" style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}>
+                {t('createUserTitle')}
+              </h2>
+              <button onClick={() => setShowCreate(false)}>
+                <X size={20} className="text-[#9b9b9b]" />
+              </button>
+            </div>
+            <div className="p-6 space-y-3">
+              {createSuccess ? (
+                <div className="p-3 rounded-xl text-sm text-center" style={{ background: '#E8F5E9', color: '#2e7d32' }}>
+                  {t('userCreated')}
+                </div>
+              ) : (
+                <>
+                  {/* Name */}
+                  <div>
+                    <label className="block text-xs text-[#6b6b6b] mb-1">{t('name')} *</label>
+                    <input
+                      value={createForm.name}
+                      onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC]"
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="block text-xs text-[#6b6b6b] mb-1">{t('emailOptional')}</label>
+                    <input
+                      type="email"
+                      value={createForm.email}
+                      onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC]"
+                      placeholder="user@example.com"
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label className="block text-xs text-[#6b6b6b] mb-1">{t('phoneOptional')}</label>
+                    <input
+                      type="tel"
+                      value={createForm.phone}
+                      onChange={(e) => setCreateForm((f) => ({ ...f, phone: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC]"
+                      placeholder="+7 777 000 00 00"
+                    />
+                  </div>
+
+                  {/* Password */}
+                  <div>
+                    <label className="block text-xs text-[#6b6b6b] mb-1">{t('password')} *</label>
+                    <input
+                      type="password"
+                      value={createForm.password}
+                      onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC]"
+                      placeholder={t('passwordMin')}
+                    />
+                  </div>
+
+                  {/* Role */}
+                  <div>
+                    <label className="block text-xs text-[#6b6b6b] mb-1">{t('role')}</label>
+                    <select
+                      value={createForm.role}
+                      onChange={(e) => setCreateForm((f) => ({ ...f, role: e.target.value as 'USER' | 'ADMIN' }))}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC] bg-white"
+                    >
+                      {ROLES.map((r) => (
+                        <option key={r.value} value={r.value}>{r.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {createError && (
+                    <div className="text-xs text-[#c62828] px-1">{createError}</div>
+                  )}
+
+                  <div className="flex gap-3 pt-1">
+                    <button
+                      onClick={() => setShowCreate(false)}
+                      className="flex-1 py-2.5 rounded-full text-sm border border-[#e0d8cc] text-[#6b6b6b]"
+                    >
+                      {t('cancel')}
+                    </button>
+                    <button
+                      onClick={handleCreateSubmit}
+                      disabled={creating}
+                      className="flex-1 py-2.5 rounded-full text-sm text-white disabled:opacity-50"
+                      style={{ background: '#4978BC' }}
+                    >
+                      {creating ? '...' : t('save')}
                     </button>
                   </div>
                 </>
