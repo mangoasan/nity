@@ -46,10 +46,18 @@ enum PTRequestStatus {
   CLOSED
 }
 
+enum ClassPassTemplate {
+  TRIAL
+  EIGHT
+  TWELVE
+  UNLIMITED_MONTH
+}
+
 model User {
   id           String       @id @default(cuid())
   name         String
   email        String       @unique
+  phone        String?
   passwordHash String?
   role         Role         @default(USER)
   authProvider AuthProvider @default(EMAIL)
@@ -60,6 +68,7 @@ model User {
 
   bookings   Booking[]
   ptRequests PersonalTrainingRequest[]
+  classPasses ClassPass[]
 }
 
 model YogaMaster {
@@ -119,13 +128,31 @@ model Booking {
   bookingDate    DateTime
   status         BookingStatus @default(CONFIRMED)
   notes          String?
+  classPassId    String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
   user         User         @relation(fields: [userId], references: [id])
   scheduleSlot ScheduleSlot @relation(fields: [scheduleSlotId], references: [id])
+  classPass    ClassPass?   @relation(fields: [classPassId], references: [id])
 
   @@unique([userId, scheduleSlotId, bookingDate])
+}
+
+model ClassPass {
+  id                 String            @id @default(cuid())
+  userId             String
+  template           ClassPassTemplate
+  totalClasses       Int?
+  remainingClasses   Int?
+  isUnlimited        Boolean           @default(false)
+  startsAt           DateTime          @default(now())
+  expiresAt          DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id])
+  bookings Booking[]
 }
 
 model PersonalTrainingRequest {

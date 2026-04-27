@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   title: 'Nity — Студия йоги в Астане',
   description:
     'Nity — премиальная студия йоги в Астане на улице Жошы хан, 1. Расписание занятий, запись к мастерам, персональные тренировки.',
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export function generateStaticParams() {

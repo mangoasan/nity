@@ -4,6 +4,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Nity — Студия йоги в Астане",
   description: "Nity — премиальная студия йоги в Астане. Расписание занятий, запись к мастерам, персональные тренировки.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

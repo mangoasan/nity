@@ -12,6 +12,7 @@ export default function SignUpPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +22,7 @@ export default function SignUpPage() {
     setError('');
     setLoading(true);
     try {
-      const result = await authApi.register(name, email, password);
+      const result = await authApi.register(name, email, password, phone || undefined);
       login(result.accessToken, result.user);
       router.push('/');
     } catch (err: any) {
@@ -77,6 +78,17 @@ export default function SignUpPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('emailPlaceholder')}
+              required
+              className="w-full px-4 py-3 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC] transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-[#6b6b6b] mb-1.5">{t('phone')}</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder={t('phonePlaceholder')}
               required
               className="w-full px-4 py-3 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC] transition-colors"
             />

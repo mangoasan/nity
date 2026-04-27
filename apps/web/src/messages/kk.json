@@ -27,8 +27,8 @@
     "ptCta": "Өтінім қалдыру",
     "locationTitle": "Бізді табу",
     "address": "Астана, Жошы хан көшесі, 1",
-    "phone": "+7 (700) 000-00-00",
-    "email": "hello@nity.kz"
+    "phone": "+7 747 681 0582",
+    "email": "nity.kzz@gmail.com"
   },
   "schedule": {
     "title": "Сабақ кестесі",
@@ -87,6 +87,8 @@
     "email": "Email",
     "password": "Құпия сөз",
     "name": "Аты",
+    "phone": "Телефон нөмірі",
+    "phonePlaceholder": "+7 (700) 000-00-00",
     "continueWithGoogle": "Google арқылы кіру",
     "noAccount": "Тіркелгіңіз жоқ па?",
     "hasAccount": "Тіркелгіңіз бар ма?",
@@ -94,7 +96,15 @@
     "passwordPlaceholder": "Кемінде 8 таңба",
     "namePlaceholder": "Атыңыз",
     "signInError": "Email немесе құпия сөз қате",
-    "signUpError": "Тіркелгі жасау мүмкін болмады"
+    "signUpError": "Тіркелгі жасау мүмкін болмады",
+    "completePhone": "Телефон нөмірін енгізіңіз",
+    "completePhoneSubtitle": "Тіркелуді аяқтау үшін телефон нөмірін енгізіңіз",
+    "completePhoneBtn": "Сақтау және жалғастыру",
+    "changePassword": "Құпия сөзді өзгерту",
+    "currentPassword": "Ағымдағы құпия сөз",
+    "newPassword": "Жаңа құпия сөз",
+    "changePasswordSuccess": "Құпия сөз сәтті өзгертілді",
+    "changePasswordError": "Құпия сөзді өзгерту мүмкін болмады"
   },
   "bookings": {
     "title": "Менің сабақтарым",
@@ -107,7 +117,12 @@
       "NO_SHOW": "Келмеді"
     },
     "cancel": "Болдырмау",
-    "cancelConfirm": "Сіз шынымен болдырмақсыз ба?"
+    "cancelConfirm": "Сіз шынымен болдырмақсыз ба?",
+    "cancelDeadlinePassed": "Болдырмау мүмкін емес — мерзімі өтті (сабақ басталуынан 1 сағат бұрын)",
+    "noPass": "Белсенді абонемент жоқ. Әкімшіге хабарласыңыз.",
+    "passUnlimited": "Безлимит {date} дейін белсенді",
+    "passClasses": "Абонемент: {count} сабақ",
+    "passNone": "Белсенді абонемент жоқ"
   },
   "admin": {
     "dashboard": "Басқару панелі",
@@ -166,8 +181,24 @@
     "registeredAt": "Тіркелген күні",
     "bookingsCount": "Жазылымдар",
     "ptRequestsCount": "Өтінімдер",
-    "searchUsers": "Аты, email, рөлі бойынша іздеу",
-    "noUsers": "Пайдаланушылар табылмады"
+    "searchUsers": "Аты, email, телефон бойынша іздеу",
+    "noUsers": "Пайдаланушылар табылмады",
+    "grantPass": "Абонемент беру",
+    "selectPassTemplate": "Абонемент таңдаңыз",
+    "passTrial": "Пробное (1 сабақ)",
+    "passEight": "8 сабақ",
+    "passTwelve": "12 сабақ",
+    "passUnlimitedMonth": "Айлық безлимит",
+    "passGranted": "Абонемент берілді",
+    "passActive": "Абонемент",
+    "passNone": "Абонемент жоқ",
+    "filterDate": "Күні",
+    "filterWeekday": "Апта күні",
+    "filterClassType": "Сабақ түрі",
+    "filterMaster": "Шебер",
+    "filterUser": "Пайдаланушы",
+    "filterAll": "Барлығы",
+    "resetFilters": "Тазарту"
   },
   "common": {
     "loading": "Жүктелуде...",

@@ -27,8 +27,8 @@
     "ptCta": "Оставить заявку",
     "locationTitle": "Как нас найти",
     "address": "Астана, Улица Жошы хан, 1",
-    "phone": "+7 (700) 000-00-00",
-    "email": "hello@nity.kz"
+    "phone": "+7 747 681 0582",
+    "email": "nity.kzz@gmail.com"
   },
   "schedule": {
     "title": "Расписание занятий",
@@ -87,6 +87,8 @@
     "email": "Email",
     "password": "Пароль",
     "name": "Имя",
+    "phone": "Номер телефона",
+    "phonePlaceholder": "+7 (700) 000-00-00",
     "continueWithGoogle": "Войти через Google",
     "noAccount": "Нет аккаунта?",
     "hasAccount": "Уже есть аккаунт?",
@@ -94,7 +96,15 @@
     "passwordPlaceholder": "Минимум 8 символов",
     "namePlaceholder": "Ваше имя",
     "signInError": "Неверный email или пароль",
-    "signUpError": "Не удалось создать аккаунт"
+    "signUpError": "Не удалось создать аккаунт",
+    "completePhone": "Укажите номер телефона",
+    "completePhoneSubtitle": "Для завершения регистрации укажите номер телефона",
+    "completePhoneBtn": "Сохранить и продолжить",
+    "changePassword": "Изменить пароль",
+    "currentPassword": "Текущий пароль",
+    "newPassword": "Новый пароль",
+    "changePasswordSuccess": "Пароль успешно изменён",
+    "changePasswordError": "Не удалось изменить пароль"
   },
   "bookings": {
     "title": "Мои занятия",
@@ -107,7 +117,12 @@
       "NO_SHOW": "Не явились"
     },
     "cancel": "Отменить",
-    "cancelConfirm": "Вы уверены, что хотите отменить?"
+    "cancelConfirm": "Вы уверены, что хотите отменить?",
+    "cancelDeadlinePassed": "Отмена недоступна — прошёл срок (за 1 час до начала)",
+    "noPass": "Нет активного абонемента. Обратитесь к администратору.",
+    "passUnlimited": "Безлимит активен до {date}",
+    "passClasses": "Абонемент: {count} занятий",
+    "passNone": "Нет активного абонемента"
   },
   "admin": {
     "dashboard": "Панель управления",
@@ -166,8 +181,24 @@
     "registeredAt": "Дата регистрации",
     "bookingsCount": "Бронирования",
     "ptRequestsCount": "Заявки",
-    "searchUsers": "Поиск по имени, email, роли",
-    "noUsers": "Пользователи не найдены"
+    "searchUsers": "Поиск по имени, email, телефону",
+    "noUsers": "Пользователи не найдены",
+    "grantPass": "Выдать абонемент",
+    "selectPassTemplate": "Выберите абонемент",
+    "passTrial": "Пробное (1 занятие)",
+    "passEight": "8 занятий",
+    "passTwelve": "12 занятий",
+    "passUnlimitedMonth": "Безлимит на месяц",
+    "passGranted": "Абонемент выдан",
+    "passActive": "Абонемент",
+    "passNone": "Нет абонемента",
+    "filterDate": "Дата",
+    "filterWeekday": "День недели",
+    "filterClassType": "Тип занятия",
+    "filterMaster": "Мастер",
+    "filterUser": "Пользователь",
+    "filterAll": "Все",
+    "resetFilters": "Сбросить"
   },
   "common": {
     "loading": "Загрузка...",

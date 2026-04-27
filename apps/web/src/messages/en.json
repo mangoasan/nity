@@ -27,8 +27,8 @@
     "ptCta": "Submit Request",
     "locationTitle": "Find Us",
     "address": "Astana, Zhoshy Khan Street, 1",
-    "phone": "+7 (700) 000-00-00",
-    "email": "hello@nity.kz"
+    "phone": "+7 747 681 0582",
+    "email": "nity.kzz@gmail.com"
   },
   "schedule": {
     "title": "Class Schedule",
@@ -87,6 +87,8 @@
     "email": "Email",
     "password": "Password",
     "name": "Name",
+    "phone": "Phone Number",
+    "phonePlaceholder": "+7 (700) 000-00-00",
     "continueWithGoogle": "Continue with Google",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
@@ -94,7 +96,15 @@
     "passwordPlaceholder": "Minimum 8 characters",
     "namePlaceholder": "Your name",
     "signInError": "Invalid email or password",
-    "signUpError": "Failed to create account"
+    "signUpError": "Failed to create account",
+    "completePhone": "Add Your Phone Number",
+    "completePhoneSubtitle": "Please add your phone number to complete registration",
+    "completePhoneBtn": "Save and Continue",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "changePasswordSuccess": "Password changed successfully",
+    "changePasswordError": "Failed to change password"
   },
   "bookings": {
     "title": "My Classes",
@@ -107,7 +117,12 @@
       "NO_SHOW": "No Show"
     },
     "cancel": "Cancel",
-    "cancelConfirm": "Are you sure you want to cancel?"
+    "cancelConfirm": "Are you sure you want to cancel?",
+    "cancelDeadlinePassed": "Cancellation unavailable — deadline passed (1 hour before class)",
+    "noPass": "No active class pass. Please contact the administrator.",
+    "passUnlimited": "Unlimited pass active until {date}",
+    "passClasses": "Pass: {count} classes remaining",
+    "passNone": "No active class pass"
   },
   "admin": {
     "dashboard": "Dashboard",
@@ -166,8 +181,24 @@
     "registeredAt": "Registered",
     "bookingsCount": "Bookings",
     "ptRequestsCount": "Requests",
-    "searchUsers": "Search by name, email, role",
-    "noUsers": "No users found"
+    "searchUsers": "Search by name, email, phone",
+    "noUsers": "No users found",
+    "grantPass": "Grant Pass",
+    "selectPassTemplate": "Select pass",
+    "passTrial": "Trial (1 class)",
+    "passEight": "8 classes",
+    "passTwelve": "12 classes",
+    "passUnlimitedMonth": "Unlimited month",
+    "passGranted": "Pass granted",
+    "passActive": "Pass",
+    "passNone": "No pass",
+    "filterDate": "Date",
+    "filterWeekday": "Weekday",
+    "filterClassType": "Class Type",
+    "filterMaster": "Master",
+    "filterUser": "User",
+    "filterAll": "All",
+    "resetFilters": "Reset"
   },
   "common": {
     "loading": "Loading...",

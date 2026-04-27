@@ -76,6 +76,8 @@ export const api = {
     request<T>(path, { method: 'POST', body: data }),
   put: <T>(path: string, data: unknown) =>
     request<T>(path, { method: 'PUT', body: JSON.stringify(data) }),
+  patch: <T>(path: string, data: unknown) =>
+    request<T>(path, { method: 'PATCH', body: JSON.stringify(data) }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
 
@@ -83,9 +85,13 @@ export const api = {
 export const authApi = {
   login: (email: string, password: string) =>
     api.post<{ accessToken: string; user: User }>('/auth/login', { email, password }),
-  register: (name: string, email: string, password: string) =>
-    api.post<{ accessToken: string; user: User }>('/auth/register', { name, email, password }),
+  register: (name: string, email: string, password: string, phone?: string) =>
+    api.post<{ accessToken: string; user: User }>('/auth/register', { name, email, password, phone }),
   getMe: () => api.get<User>('/auth/me'),
+  getMyPasses: () => api.get<PassSummary>('/auth/me/passes'),
+  updatePhone: (phone: string) => api.patch<User>('/auth/me/phone', { phone }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api.post<{ success: boolean }>('/auth/me/change-password', { currentPassword, newPassword }),
 };
 
 // Masters
@@ -130,7 +136,18 @@ export const bookingsApi = {
     api.post<Booking>('/bookings', { scheduleSlotId, bookingDate }),
   getMyBookings: () => api.get<Booking[]>('/bookings/my'),
   cancel: (id: string) => api.delete(`/bookings/${id}`),
-  getAll: () => api.get<Booking[]>('/bookings'),
+  getAll: (filters?: BookingFilters) => {
+    const params = new URLSearchParams();
+    if (filters?.status) params.set('status', filters.status);
+    if (filters?.slotId) params.set('slotId', filters.slotId);
+    if (filters?.date) params.set('date', filters.date);
+    if (filters?.weekday) params.set('weekday', filters.weekday);
+    if (filters?.classTypeId) params.set('classTypeId', filters.classTypeId);
+    if (filters?.masterId) params.set('masterId', filters.masterId);
+    if (filters?.userSearch) params.set('userSearch', filters.userSearch);
+    const qs = params.toString();
+    return api.get<Booking[]>(`/bookings${qs ? `?${qs}` : ''}`);
+  },
   updateStatus: (id: string, status: string) =>
     api.put(`/bookings/${id}/status`, { status }),
 };
@@ -156,6 +173,8 @@ export const adminApi = {
       confirmedBookings: number;
     }>('/admin/dashboard'),
   getUsers: () => api.get<AdminUser[]>('/admin/users'),
+  grantClassPass: (userId: string, template: ClassPassTemplate) =>
+    api.post<ClassPass>(`/admin/users/${userId}/class-pass`, { template }),
 };
 
 // Types
@@ -163,9 +182,17 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   role: 'USER' | 'ADMIN';
   avatarUrl?: string;
   authProvider: string;
+}
+
+export interface ActivePassInfo {
+  type: 'unlimited' | 'finite';
+  template: ClassPassTemplate;
+  remainingClasses?: number;
+  expiresAt?: string;
 }
 
 export interface AdminUser extends User {
@@ -175,6 +202,7 @@ export interface AdminUser extends User {
     bookings: number;
     ptRequests: number;
   };
+  activePass: ActivePassInfo | null;
 }
 
 export interface Master {
@@ -223,7 +251,37 @@ export interface Booking {
   bookingDate: string;
   status: 'CONFIRMED' | 'CANCELLED' | 'ATTENDED' | 'NO_SHOW';
   notes?: string;
+  classPassId?: string;
   scheduleSlot?: ScheduleSlot;
+}
+
+export type ClassPassTemplate = 'TRIAL' | 'EIGHT' | 'TWELVE' | 'UNLIMITED_MONTH';
+
+export interface ClassPass {
+  id: string;
+  userId: string;
+  template: ClassPassTemplate;
+  totalClasses?: number;
+  remainingClasses?: number;
+  isUnlimited: boolean;
+  startsAt: string;
+  expiresAt?: string;
+}
+
+export interface PassSummary {
+  unlimitedPass: { id: string; expiresAt?: string; template: ClassPassTemplate } | null;
+  finitePass: { id: string; remainingClasses: number; template: ClassPassTemplate } | null;
+  hasActivePass: boolean;
+}
+
+export interface BookingFilters {
+  status?: string;
+  slotId?: string;
+  date?: string;
+  weekday?: string;
+  classTypeId?: string;
+  masterId?: string;
+  userSearch?: string;
 }
 
 export interface PTRequestData {

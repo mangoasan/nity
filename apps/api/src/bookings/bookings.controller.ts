@@ -9,7 +9,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Role, BookingStatus } from '@prisma/client';
+import { Role, BookingStatus, Weekday } from '@prisma/client';
 
 @Controller('bookings')
 export class BookingsController {
@@ -40,8 +40,15 @@ export class BookingsController {
   findAll(
     @Query('status') status?: BookingStatus,
     @Query('slotId') slotId?: string,
+    @Query('date') date?: string,
+    @Query('weekday') weekday?: Weekday,
+    @Query('classTypeId') classTypeId?: string,
+    @Query('masterId') masterId?: string,
+    @Query('userSearch') userSearch?: string,
   ) {
-    return this.bookingsService.findAll({ status, slotId });
+    return this.bookingsService.findAll({
+      status, slotId, date, weekday, classTypeId, masterId, userSearch,
+    });
   }
 
   @Put(':id/status')
