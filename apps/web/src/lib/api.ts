@@ -180,8 +180,8 @@ export const adminApi = {
     password: string;
     role?: 'USER' | 'ADMIN';
   }) => api.post<AdminUser>('/admin/users', data),
-  grantClassPass: (userId: string, template: ClassPassTemplate) =>
-    api.post<ClassPass>(`/admin/users/${userId}/class-pass`, { template }),
+  grantClassPass: (userId: string, template: ClassPassTemplate, customCount?: number) =>
+    api.post<ClassPass>(`/admin/users/${userId}/class-pass`, { template, ...(customCount !== undefined ? { customCount } : {}) }),
 };
 
 // Types
@@ -262,7 +262,7 @@ export interface Booking {
   scheduleSlot?: ScheduleSlot;
 }
 
-export type ClassPassTemplate = 'TRIAL' | 'EIGHT' | 'TWELVE' | 'UNLIMITED_MONTH';
+export type ClassPassTemplate = 'TRIAL' | 'EIGHT' | 'TWELVE' | 'UNLIMITED_MONTH' | 'CUSTOM';
 
 export interface ClassPass {
   id: string;

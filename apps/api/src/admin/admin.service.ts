@@ -13,6 +13,7 @@ const PASS_CLASSES: Record<string, number | null> = {
   EIGHT: 8,
   TWELVE: 12,
   UNLIMITED_MONTH: null,
+  CUSTOM: null,
 };
 
 @Injectable()
@@ -120,8 +121,8 @@ export class AdminService {
     const user = await this.prisma.user.create({
       data: {
         name: dto.name,
-        email: dto.email ?? null,
-        phone: dto.phone ?? null,
+        email: dto.email ?? undefined,
+        phone: dto.phone ?? undefined,
         passwordHash,
         role: dto.role ?? Role.USER,
         authProvider: AuthProvider.EMAIL,
@@ -132,26 +133,94 @@ export class AdminService {
     return safe;
   }
 
-  async grantClassPass(userId: string, template: ClassPassTemplate) {
+  async grantClassPass(userId: string, template: ClassPassTemplate, customCount?: number) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
+    const now = new Date();
     const isUnlimited = template === ClassPassTemplate.UNLIMITED_MONTH;
-    const totalClasses = isUnlimited ? null : (PASS_CLASSES[template] as number);
-    const startsAt = new Date();
-    const expiresAt = isUnlimited
-      ? new Date(startsAt.getTime() + 30 * 24 * 60 * 60 * 1000)
-      : null;
 
+    if (isUnlimited) {
+      // Extend existing unlimited pass or create new one
+      const existing = await this.prisma.classPass.findFirst({
+        where: {
+          userId,
+          isUnlimited: true,
+          startsAt: { lte: now },
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+        },
+        orderBy: { startsAt: 'desc' },
+      });
+
+      if (existing) {
+        const base =
+          existing.expiresAt && existing.expiresAt > now ? existing.expiresAt : now;
+        const newExpiry = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000);
+        return this.prisma.classPass.update({
+          where: { id: existing.id },
+          data: { expiresAt: newExpiry },
+        });
+      }
+
+      const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      return this.prisma.classPass.create({
+        data: {
+          userId,
+          template,
+          isUnlimited: true,
+          totalClasses: null,
+          remainingClasses: null,
+          startsAt: now,
+          expiresAt,
+        },
+      });
+    }
+
+    // Finite pass
+    const count =
+      template === ClassPassTemplate.CUSTOM
+        ? (customCount as number)
+        : (PASS_CLASSES[template] as number);
+
+    if (!count || count < 1) {
+      throw new BadRequestException('Invalid class count');
+    }
+
+    // Add to existing active finite pass if present
+    const existingFinite = await this.prisma.classPass.findFirst({
+      where: {
+        userId,
+        isUnlimited: false,
+        remainingClasses: { gt: 0 },
+        startsAt: { lte: now },
+        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+      },
+      orderBy: { startsAt: 'desc' },
+    });
+
+    if (existingFinite) {
+      return this.prisma.classPass.update({
+        where: { id: existingFinite.id },
+        data: {
+          remainingClasses: { increment: count },
+          totalClasses:
+            existingFinite.totalClasses != null
+              ? existingFinite.totalClasses + count
+              : count,
+        },
+      });
+    }
+
+    // Create new finite pass
     return this.prisma.classPass.create({
       data: {
         userId,
         template,
-        isUnlimited,
-        totalClasses,
-        remainingClasses: isUnlimited ? null : totalClasses,
-        startsAt,
-        expiresAt,
+        isUnlimited: false,
+        totalClasses: count,
+        remainingClasses: count,
+        startsAt: now,
+        expiresAt: null,
       },
     });
   }

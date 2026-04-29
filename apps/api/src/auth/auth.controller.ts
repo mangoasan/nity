@@ -10,6 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -27,11 +28,13 @@ export class AuthController {
     private configService: ConfigService,
   ) {}
 
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
@@ -61,10 +64,12 @@ export class AuthController {
     return this.authService.changePassword(user.id, dto);
   }
 
+  @SkipThrottle()
   @Get('google')
   @UseGuards(GoogleAuthGuard)
   googleAuth(@Query('locale') _locale?: string) {}
 
+  @SkipThrottle()
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleCallback(@Req() req: any, @Res() res: any) {

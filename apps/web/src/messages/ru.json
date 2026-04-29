@@ -39,7 +39,15 @@
     "spotsLeft": "Свободных мест: {count}",
     "duration": "{min} мин",
     "capacity": "{filled} / {total} мест",
-    "loginToBook": "Войдите, чтобы забронировать"
+    "loginToBook": "Войдите, чтобы забронировать",
+    "confirmTitle": "Подтвердите запись",
+    "confirmText": "Вы хотите записаться на занятие?",
+    "confirmDate": "Дата",
+    "confirmTime": "Время",
+    "confirmMaster": "Преподаватель",
+    "confirmSpots": "Осталось мест: {count}",
+    "confirmBtn": "Подтвердить",
+    "nearestClass": "Ближайшее занятие"
   },
   "weekdays": {
     "MONDAY": "Понедельник",
@@ -192,6 +200,9 @@
     "passGranted": "Абонемент выдан",
     "passActive": "Абонемент",
     "passNone": "Нет абонемента",
+    "passCustom": "Произвольное количество",
+    "customClassCount": "Количество занятий",
+    "customClassCountPlaceholder": "Введите число (1–200)",
     "filterDate": "Дата",
     "filterWeekday": "День недели",
     "filterClassType": "Тип занятия",

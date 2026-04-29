@@ -11,16 +11,30 @@ import {
   IsOptional,
   IsEmail,
   MinLength,
+  IsInt,
+  Min,
+  Max,
+  ValidateIf,
+  MaxLength,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 class GrantPassDto {
   @IsEnum(ClassPassTemplate)
   template: ClassPassTemplate;
+
+  @ValidateIf((o) => o.template === 'CUSTOM')
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  @Type(() => Number)
+  customCount?: number;
 }
 
 class CreateUserAdminDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   name: string;
 
   @IsEmail()
@@ -29,10 +43,12 @@ class CreateUserAdminDto {
 
   @IsString()
   @IsOptional()
+  @MaxLength(30)
   phone?: string;
 
   @IsString()
   @MinLength(6)
+  @MaxLength(100)
   password: string;
 
   @IsEnum(Role)
@@ -63,6 +79,6 @@ export class AdminController {
 
   @Post('users/:id/class-pass')
   grantClassPass(@Param('id') id: string, @Body() dto: GrantPassDto) {
-    return this.adminService.grantClassPass(id, dto.template);
+    return this.adminService.grantClassPass(id, dto.template, dto.customCount);
   }
 }

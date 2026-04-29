@@ -39,7 +39,15 @@
     "spotsLeft": "Spots left: {count}",
     "duration": "{min} min",
     "capacity": "{filled} / {total} spots",
-    "loginToBook": "Sign in to book"
+    "loginToBook": "Sign in to book",
+    "confirmTitle": "Confirm Booking",
+    "confirmText": "You are about to book this class:",
+    "confirmDate": "Date",
+    "confirmTime": "Time",
+    "confirmMaster": "Instructor",
+    "confirmSpots": "Spots left: {count}",
+    "confirmBtn": "Confirm",
+    "nearestClass": "Next class"
   },
   "weekdays": {
     "MONDAY": "Monday",
@@ -192,6 +200,9 @@
     "passGranted": "Pass granted",
     "passActive": "Pass",
     "passNone": "No pass",
+    "passCustom": "Custom amount",
+    "customClassCount": "Number of classes",
+    "customClassCountPlaceholder": "Enter number (1–200)",
     "filterDate": "Date",
     "filterWeekday": "Weekday",
     "filterClassType": "Class Type",

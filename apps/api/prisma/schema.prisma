@@ -51,6 +51,7 @@ enum ClassPassTemplate {
   EIGHT
   TWELVE
   UNLIMITED_MONTH
+  CUSTOM
 }
 
 model User {

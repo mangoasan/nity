@@ -39,7 +39,15 @@
     "spotsLeft": "Бос орын: {count}",
     "duration": "{min} мин",
     "capacity": "{filled} / {total} орын",
-    "loginToBook": "Жазылу үшін кіріңіз"
+    "loginToBook": "Жазылу үшін кіріңіз",
+    "confirmTitle": "Жазылуды растаңыз",
+    "confirmText": "Осы сабаққа жазылғыңыз келе ме?",
+    "confirmDate": "Күні",
+    "confirmTime": "Уақыты",
+    "confirmMaster": "Оқытушы",
+    "confirmSpots": "Бос орын: {count}",
+    "confirmBtn": "Растау",
+    "nearestClass": "Келесі сабақ"
   },
   "weekdays": {
     "MONDAY": "Дүйсенбі",
@@ -192,6 +200,9 @@
     "passGranted": "Абонемент берілді",
     "passActive": "Абонемент",
     "passNone": "Абонемент жоқ",
+    "passCustom": "Еркін санда",
+    "customClassCount": "Сабақ саны",
+    "customClassCountPlaceholder": "Санды енгізіңіз (1–200)",
     "filterDate": "Күні",
     "filterWeekday": "Апта күні",
     "filterClassType": "Сабақ түрі",

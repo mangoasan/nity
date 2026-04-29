@@ -10,6 +10,7 @@ const PASS_TEMPLATES: { value: ClassPassTemplate; labelKey: string }[] = [
   { value: 'EIGHT', labelKey: 'passEight' },
   { value: 'TWELVE', labelKey: 'passTwelve' },
   { value: 'UNLIMITED_MONTH', labelKey: 'passUnlimitedMonth' },
+  { value: 'CUSTOM', labelKey: 'passCustom' },
 ];
 
 const ROLES: { value: 'USER' | 'ADMIN'; label: string }[] = [
@@ -33,6 +34,9 @@ const EMPTY_FORM: CreateUserForm = {
   role: 'USER',
 };
 
+const inputClass =
+  'w-full px-3 py-2.5 rounded-xl border border-[#e0d8cc] text-sm outline-none transition-colors focus:border-[#4978BC] bg-white';
+
 export default function AdminUsersPage() {
   const t = useTranslations('admin');
   const locale = useLocale();
@@ -44,6 +48,8 @@ export default function AdminUsersPage() {
   // Grant pass state
   const [grantTarget, setGrantTarget] = useState<AdminUser | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ClassPassTemplate>('TRIAL');
+  const [customCount, setCustomCount] = useState('');
+  const [customCountError, setCustomCountError] = useState('');
   const [granting, setGranting] = useState(false);
   const [grantSuccess, setGrantSuccess] = useState('');
 
@@ -83,20 +89,40 @@ export default function AdminUsersPage() {
 
   const handleGrant = async () => {
     if (!grantTarget) return;
+    setCustomCountError('');
+
+    if (selectedTemplate === 'CUSTOM') {
+      const n = parseInt(customCount, 10);
+      if (!customCount || isNaN(n) || n < 1 || n > 200 || !Number.isInteger(n)) {
+        setCustomCountError(t('customClassCountPlaceholder' as any));
+        return;
+      }
+    }
+
     setGranting(true);
     try {
-      await adminApi.grantClassPass(grantTarget.id, selectedTemplate);
+      const count = selectedTemplate === 'CUSTOM' ? parseInt(customCount, 10) : undefined;
+      await adminApi.grantClassPass(grantTarget.id, selectedTemplate, count);
       setGrantSuccess(t('passGranted'));
       await reload();
       setTimeout(() => {
         setGrantTarget(null);
         setGrantSuccess('');
+        setCustomCount('');
       }, 1500);
     } catch (err: any) {
       setError(err.message || 'Failed to grant pass');
     } finally {
       setGranting(false);
     }
+  };
+
+  const openGrant = (user: AdminUser) => {
+    setGrantTarget(user);
+    setSelectedTemplate('TRIAL');
+    setCustomCount('');
+    setCustomCountError('');
+    setGrantSuccess('');
   };
 
   const handleCreateSubmit = async () => {
@@ -162,7 +188,7 @@ export default function AdminUsersPage() {
           />
           <button
             onClick={() => { setShowCreate(true); setCreateForm(EMPTY_FORM); setCreateError(''); setCreateSuccess(false); }}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm text-white whitespace-nowrap"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm text-white whitespace-nowrap transition-opacity hover:opacity-90"
             style={{ background: '#4978BC' }}
           >
             <Plus size={15} />
@@ -237,8 +263,8 @@ export default function AdminUsersPage() {
                       <td className="px-4 py-3 text-[#6b6b6b]">{user._count.bookings}</td>
                       <td className="px-4 py-3">
                         <button
-                          onClick={() => { setGrantTarget(user); setSelectedTemplate('TRIAL'); setGrantSuccess(''); }}
-                          className="text-xs px-3 py-1.5 rounded-full text-white whitespace-nowrap"
+                          onClick={() => openGrant(user)}
+                          className="text-xs px-3 py-1.5 rounded-full text-white whitespace-nowrap transition-opacity hover:opacity-90"
                           style={{ background: '#4978BC' }}
                         >
                           {t('grantPass')}
@@ -257,52 +283,88 @@ export default function AdminUsersPage() {
       {grantTarget && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.4)' }}
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setGrantTarget(null); }}
         >
-          <div className="w-full max-w-sm rounded-2xl" style={{ background: '#fff' }}>
-            <div className="flex items-center justify-between p-6 border-b border-[#e0d8cc]">
+          <div className="w-full max-w-sm rounded-2xl shadow-xl" style={{ background: '#fff' }}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e0d8cc]">
               <h2 className="text-lg" style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}>
                 {t('grantPass')}
               </h2>
-              <button onClick={() => setGrantTarget(null)}>
-                <X size={20} className="text-[#9b9b9b]" />
+              <button
+                onClick={() => setGrantTarget(null)}
+                className="p-1 rounded-lg hover:bg-[#f5f0e8] transition-colors"
+              >
+                <X size={18} className="text-[#9b9b9b]" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <div className="text-sm font-medium">{grantTarget.name}</div>
-                <div className="text-xs text-[#9b9b9b]">{grantTarget.email || grantTarget.phone || '—'}</div>
+
+            <div className="px-6 py-5 space-y-4">
+              {/* User info */}
+              <div className="p-3 rounded-xl" style={{ background: '#F5F0E8' }}>
+                <div className="text-sm font-medium text-[#1a1a1a]">{grantTarget.name}</div>
+                <div className="text-xs text-[#6b6b6b] mt-0.5">{grantTarget.email || grantTarget.phone || '—'}</div>
               </div>
 
               {grantSuccess ? (
                 <div className="p-3 rounded-xl text-sm text-center" style={{ background: '#E8F5E9', color: '#2e7d32' }}>
-                  {grantSuccess}
+                  ✓ {grantSuccess}
                 </div>
               ) : (
                 <>
+                  {/* Template selector */}
                   <div>
-                    <label className="block text-sm text-[#6b6b6b] mb-1.5">{t('selectPassTemplate')}</label>
+                    <label className="block text-xs font-medium text-[#6b6b6b] mb-1.5">
+                      {t('selectPassTemplate')}
+                    </label>
                     <select
                       value={selectedTemplate}
-                      onChange={(e) => setSelectedTemplate(e.target.value as ClassPassTemplate)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC] bg-white"
+                      onChange={(e) => {
+                        setSelectedTemplate(e.target.value as ClassPassTemplate);
+                        setCustomCount('');
+                        setCustomCountError('');
+                      }}
+                      className={inputClass}
                     >
                       {PASS_TEMPLATES.map((pt) => (
                         <option key={pt.value} value={pt.value}>{t(pt.labelKey as any)}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="flex gap-3">
+
+                  {/* Custom count input */}
+                  {selectedTemplate === 'CUSTOM' && (
+                    <div>
+                      <label className="block text-xs font-medium text-[#6b6b6b] mb-1.5">
+                        {t('customClassCount' as any)}
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={200}
+                        value={customCount}
+                        onChange={(e) => { setCustomCount(e.target.value); setCustomCountError(''); }}
+                        placeholder={t('customClassCountPlaceholder' as any)}
+                        className={`${inputClass} ${customCountError ? 'border-[#c62828]' : ''}`}
+                      />
+                      {customCountError && (
+                        <p className="text-xs text-[#c62828] mt-1">{customCountError}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex gap-3 pt-1">
                     <button
                       onClick={() => setGrantTarget(null)}
-                      className="flex-1 py-2.5 rounded-full text-sm border border-[#e0d8cc] text-[#6b6b6b]"
+                      className="flex-1 py-2.5 rounded-full text-sm border border-[#e0d8cc] text-[#6b6b6b] hover:bg-[#f5f0e8] transition-colors"
                     >
                       {t('cancel')}
                     </button>
                     <button
                       onClick={handleGrant}
                       disabled={granting}
-                      className="flex-1 py-2.5 rounded-full text-sm text-white disabled:opacity-50"
+                      className="flex-1 py-2.5 rounded-full text-sm text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                       style={{ background: '#4978BC' }}
                     >
                       {granting ? '...' : t('save')}
@@ -319,77 +381,76 @@ export default function AdminUsersPage() {
       {showCreate && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.4)' }}
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowCreate(false); }}
         >
-          <div className="w-full max-w-sm rounded-2xl" style={{ background: '#fff' }}>
-            <div className="flex items-center justify-between p-6 border-b border-[#e0d8cc]">
+          <div className="w-full max-w-sm rounded-2xl shadow-xl" style={{ background: '#fff' }}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e0d8cc]">
               <h2 className="text-lg" style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}>
                 {t('createUserTitle')}
               </h2>
-              <button onClick={() => setShowCreate(false)}>
-                <X size={20} className="text-[#9b9b9b]" />
+              <button
+                onClick={() => setShowCreate(false)}
+                className="p-1 rounded-lg hover:bg-[#f5f0e8] transition-colors"
+              >
+                <X size={18} className="text-[#9b9b9b]" />
               </button>
             </div>
-            <div className="p-6 space-y-3">
+            <div className="px-6 py-5 space-y-3">
               {createSuccess ? (
                 <div className="p-3 rounded-xl text-sm text-center" style={{ background: '#E8F5E9', color: '#2e7d32' }}>
-                  {t('userCreated')}
+                  ✓ {t('userCreated')}
                 </div>
               ) : (
                 <>
-                  {/* Name */}
                   <div>
-                    <label className="block text-xs text-[#6b6b6b] mb-1">{t('name')} *</label>
+                    <label className="block text-xs font-medium text-[#6b6b6b] mb-1">{t('name')} *</label>
                     <input
                       value={createForm.name}
                       onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC]"
+                      className={inputClass}
                     />
                   </div>
 
-                  {/* Email */}
                   <div>
-                    <label className="block text-xs text-[#6b6b6b] mb-1">{t('emailOptional')}</label>
+                    <label className="block text-xs font-medium text-[#6b6b6b] mb-1">{t('emailOptional')}</label>
                     <input
                       type="email"
                       value={createForm.email}
                       onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC]"
+                      className={inputClass}
                       placeholder="user@example.com"
                     />
                   </div>
 
-                  {/* Phone */}
                   <div>
-                    <label className="block text-xs text-[#6b6b6b] mb-1">{t('phoneOptional')}</label>
+                    <label className="block text-xs font-medium text-[#6b6b6b] mb-1">{t('phoneOptional')}</label>
                     <input
                       type="tel"
                       value={createForm.phone}
                       onChange={(e) => setCreateForm((f) => ({ ...f, phone: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC]"
+                      className={inputClass}
                       placeholder="+7 777 000 00 00"
                     />
                   </div>
 
-                  {/* Password */}
                   <div>
-                    <label className="block text-xs text-[#6b6b6b] mb-1">{t('password')} *</label>
+                    <label className="block text-xs font-medium text-[#6b6b6b] mb-1">{t('password')} *</label>
                     <input
                       type="password"
                       value={createForm.password}
                       onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC]"
+                      className={inputClass}
                       placeholder={t('passwordMin')}
                     />
                   </div>
 
-                  {/* Role */}
                   <div>
-                    <label className="block text-xs text-[#6b6b6b] mb-1">{t('role')}</label>
+                    <label className="block text-xs font-medium text-[#6b6b6b] mb-1">{t('role')}</label>
                     <select
                       value={createForm.role}
                       onChange={(e) => setCreateForm((f) => ({ ...f, role: e.target.value as 'USER' | 'ADMIN' }))}
-                      className="w-full px-3 py-2 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC] bg-white"
+                      className={inputClass}
                     >
                       {ROLES.map((r) => (
                         <option key={r.value} value={r.value}>{r.label}</option>
@@ -404,14 +465,14 @@ export default function AdminUsersPage() {
                   <div className="flex gap-3 pt-1">
                     <button
                       onClick={() => setShowCreate(false)}
-                      className="flex-1 py-2.5 rounded-full text-sm border border-[#e0d8cc] text-[#6b6b6b]"
+                      className="flex-1 py-2.5 rounded-full text-sm border border-[#e0d8cc] text-[#6b6b6b] hover:bg-[#f5f0e8] transition-colors"
                     >
                       {t('cancel')}
                     </button>
                     <button
                       onClick={handleCreateSubmit}
                       disabled={creating}
-                      className="flex-1 py-2.5 rounded-full text-sm text-white disabled:opacity-50"
+                      className="flex-1 py-2.5 rounded-full text-sm text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                       style={{ background: '#4978BC' }}
                     >
                       {creating ? '...' : t('save')}
