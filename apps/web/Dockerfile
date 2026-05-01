@@ -15,9 +15,13 @@ RUN npm run build --workspace=apps/web
 
 FROM node:22-alpine AS runner
 WORKDIR /app
+ARG NEXT_PUBLIC_API_URL=http://localhost:3101/api
+ARG INTERNAL_API_URL
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV INTERNAL_API_URL=$INTERNAL_API_URL
 
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/package.json

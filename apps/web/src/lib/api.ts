@@ -21,7 +21,7 @@ export function resolveMediaUrl(url?: string | null): string {
   const normalizedPath = normalizeLocalMediaPath(url);
 
   if (normalizedPath.startsWith('/uploads/')) {
-    return '/api' + normalizedPath;
+    return `${API_ORIGIN}${normalizedPath}`;
   }
 
   return normalizedPath;
@@ -33,7 +33,7 @@ export function isSvgMediaUrl(url?: string | null): boolean {
 
 export function shouldUnoptimizeMediaUrl(url?: string | null): boolean {
   const resolvedUrl = resolveMediaUrl(url);
-  return resolvedUrl.startsWith('/api/uploads/') || /\.svg(?:\?|#|$)/i.test(resolvedUrl);
+  return /^https?:\/\//i.test(resolvedUrl) || /\.svg(?:\?|#|$)/i.test(resolvedUrl);
 }
 
 function getToken(): string | null {

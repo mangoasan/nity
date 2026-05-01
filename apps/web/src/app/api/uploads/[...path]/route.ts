@@ -12,7 +12,7 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const { path } = await params;
-  const url = `${API_ORIGIN}/uploads/${path.join('/')}`;
+  const url = `${API_ORIGIN}/uploads/${path.map((part) => encodeURIComponent(part)).join('/')}`;
 
   let response: Response;
   try {
