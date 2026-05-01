@@ -45,12 +45,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    return [
-      {
-        source: "/uploads/:path*",
-        destination: `${internalApiOrigin}/uploads/:path*`,
-      },
-    ];
+    return [];
   },
   async headers() {
     return [
