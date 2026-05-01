@@ -21,7 +21,7 @@ export function resolveMediaUrl(url?: string | null): string {
   const normalizedPath = normalizeLocalMediaPath(url);
 
   if (normalizedPath.startsWith('/uploads/')) {
-    return `${API_ORIGIN}${normalizedPath}`;
+    return normalizedPath;
   }
 
   return normalizedPath;
