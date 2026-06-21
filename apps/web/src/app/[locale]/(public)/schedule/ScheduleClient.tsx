@@ -11,24 +11,10 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from '@/i18n/navigation';
 import { X } from 'lucide-react';
+import { getNextDateForWeekday, isSlotCancelled } from '@/lib/schedule-date';
 
 const WEEKDAYS_ORDER = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 const TODAY_DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-
-function getNextDateForWeekday(weekday: string): string {
-  const dayMap: Record<string, number> = {
-    MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3, THURSDAY: 4,
-    FRIDAY: 5, SATURDAY: 6, SUNDAY: 0,
-  };
-  const today = new Date();
-  const target = dayMap[weekday];
-  const current = today.getDay();
-  let diff = target - current;
-  if (diff < 0) diff += 7;
-  const date = new Date(today);
-  date.setDate(today.getDate() + diff);
-  return date.toISOString().split('T')[0];
-}
 
 function formatDate(dateStr: string, locale: string) {
   const d = new Date(dateStr);
@@ -122,8 +108,10 @@ export default function ScheduleClient() {
     );
   }
 
-  const activeDaySlots = schedule[activeDay] || [];
   const nextDate = getNextDateForWeekday(activeDay);
+  const activeDaySlots = (schedule[activeDay] || []).filter(
+    (slot) => !isSlotCancelled(slot, nextDate),
+  );
   const pendingDate = pendingSlot ? getNextDateForWeekday(pendingSlot.weekday) : '';
   const pendingFilled = pendingSlot?._count?.bookings ?? 0;
   const pendingSpotsLeft = pendingSlot ? pendingSlot.capacity - pendingFilled : 0;

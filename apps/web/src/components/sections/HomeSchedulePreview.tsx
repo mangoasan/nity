@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { scheduleApi, ScheduleSlot } from '@/lib/api';
+import { getNextDateForWeekday, isSlotCancelled } from '@/lib/schedule-date';
 
 const WEEKDAYS_ORDER = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 const TODAY_DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
@@ -37,7 +38,9 @@ export default function HomeSchedulePreview() {
     );
   }
 
-  const activeDaySlots = schedule[activeDay] || [];
+  const activeDaySlots = (schedule[activeDay] || []).filter(
+    (slot) => !isSlotCancelled(slot, getNextDateForWeekday(activeDay)),
+  );
 
   return (
     <div>
