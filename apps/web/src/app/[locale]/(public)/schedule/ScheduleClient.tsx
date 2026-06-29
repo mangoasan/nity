@@ -23,6 +23,7 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from '@/i18n/navigation';
 import { ArrowRight, Check, CheckCircle2, Clock3, MapPin } from 'lucide-react';
+import { isSlotCancelled } from '@/lib/schedule-date';
 
 const TODAY_DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 const KZ_OFFSET_MINUTES = 5 * 60;
@@ -228,7 +229,9 @@ export default function ScheduleClient() {
 
   const activeDateObj = dateFromKey(activeDate);
   const activeDay = weekdayForDate(activeDateObj);
-  const activeSlots = schedule[activeDay] || [];
+  const activeSlots = (schedule[activeDay] || []).filter(
+    (slot) => !isSlotCancelled(slot, activeDate),
+  );
   const monthLabel = activeDateObj.toLocaleDateString(dateLocale(locale), {
     month: 'long',
     year: 'numeric',
@@ -356,7 +359,9 @@ function DateSelector({
         {dates.map((date) => {
           const key = localDateKey(date);
           const active = key === activeDate;
-          const slots = schedule[weekdayForDate(date)] || [];
+          const slots = (schedule[weekdayForDate(date)] || []).filter(
+            (slot) => !isSlotCancelled(slot, key),
+          );
           const isToday = key === today;
 
           return (

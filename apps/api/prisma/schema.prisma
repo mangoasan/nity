@@ -118,9 +118,23 @@ model ScheduleSlot {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  master    YogaMaster    @relation(fields: [masterId], references: [id])
-  classType YogaClassType @relation(fields: [classTypeId], references: [id])
-  bookings  Booking[]
+  master        YogaMaster             @relation(fields: [masterId], references: [id])
+  classType     YogaClassType          @relation(fields: [classTypeId], references: [id])
+  bookings      Booking[]
+  cancellations ScheduleCancellation[]
+}
+
+model ScheduleCancellation {
+  id               String   @id @default(cuid())
+  scheduleSlotId   String
+  cancellationDate DateTime
+  reason           String?
+  createdAt        DateTime @default(now())
+
+  scheduleSlot ScheduleSlot @relation(fields: [scheduleSlotId], references: [id], onDelete: Cascade)
+
+  @@unique([scheduleSlotId, cancellationDate])
+  @@index([cancellationDate])
 }
 
 model Booking {

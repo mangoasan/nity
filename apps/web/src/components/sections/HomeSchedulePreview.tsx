@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Card, LoadingStack, Pill, ProgressBar, cn } from '@/components/ui/nity';
 import { resolveMediaUrl, scheduleApi, ScheduleSlot } from '@/lib/api';
+import { isSlotCancelled } from '@/lib/schedule-date';
 
 const TODAY_DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 const KZ_OFFSET_MINUTES = 5 * 60;
@@ -89,7 +90,9 @@ export default function HomeSchedulePreview() {
   }
 
   const active = dates.find((date) => dateKey(date) === activeDate) || dates[0];
-  const activeSlots = (schedule[weekdayForDate(active)] || []).slice(0, 4);
+  const activeSlots = (schedule[weekdayForDate(active)] || [])
+    .filter((slot) => !isSlotCancelled(slot, activeDate))
+    .slice(0, 4);
   const monthLabel = active.toLocaleDateString(dateLocale(locale), {
     month: 'long',
     year: 'numeric',
@@ -103,7 +106,9 @@ export default function HomeSchedulePreview() {
           {dates.map((date) => {
             const key = dateKey(date);
             const isActive = key === activeDate;
-            const slots = schedule[weekdayForDate(date)] || [];
+            const slots = (schedule[weekdayForDate(date)] || []).filter(
+              (slot) => !isSlotCancelled(slot, key),
+            );
             const isToday = key === dateKey(new Date());
 
             return (

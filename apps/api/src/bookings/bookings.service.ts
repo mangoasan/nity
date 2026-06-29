@@ -32,9 +32,18 @@ function classStartUtc(bookingDate: Date, startTimeStr: string): Date {
   );
 }
 
-function dateOnlyUtc(value: Date): Date {
+function dateOnlyUtc(value: string | Date): Date {
+  const date =
+    typeof value === 'string'
+      ? new Date(`${value.split('T')[0]}T00:00:00.000Z`)
+      : value;
+
+  if (Number.isNaN(date.getTime())) {
+    throw new BadRequestException('Invalid booking date');
+  }
+
   return new Date(
-    Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()),
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
   );
 }
 
@@ -102,12 +111,37 @@ export class BookingsService {
     if (!slot) throw new NotFoundException('Schedule slot not found');
     if (!slot.isActive) throw new BadRequestException('This class is not available');
 
-    const bookingDate = new Date(dto.bookingDate);
+    const bookingDate = dateOnlyUtc(dto.bookingDate);
     const classStart = classStartUtc(bookingDate, slot.startTime);
     if (classStart <= new Date()) {
       throw new BadRequestException(
         'This class has already started and can no longer be booked',
       );
+    }
+
+    const cancellation = await this.prisma.scheduleCancellation.findUnique({
+      where: {
+        scheduleSlotId_cancellationDate: {
+          scheduleSlotId: dto.scheduleSlotId,
+          cancellationDate: bookingDate,
+        },
+      },
+    });
+    if (cancellation) {
+      throw new BadRequestException('This class has been cancelled');
+    }
+
+    const weekdayByJsDay: Weekday[] = [
+      Weekday.SUNDAY,
+      Weekday.MONDAY,
+      Weekday.TUESDAY,
+      Weekday.WEDNESDAY,
+      Weekday.THURSDAY,
+      Weekday.FRIDAY,
+      Weekday.SATURDAY,
+    ];
+    if (weekdayByJsDay[bookingDate.getUTCDay()] !== slot.weekday) {
+      throw new BadRequestException('Booking date does not match the schedule');
     }
 
     // Check capacity

@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { scheduleApi, mastersApi, classTypesApi, ScheduleSlot, Master, ClassType } from '@/lib/api';
-import { Plus, Pencil, Trash2, X } from 'lucide-react';
+import { CalendarX, Plus, Pencil, RotateCcw, Trash2, X } from 'lucide-react';
+import { getNextDateForWeekday, toLocalDateString } from '@/lib/schedule-date';
 
 const WEEKDAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 
@@ -25,6 +26,11 @@ export default function AdminSchedulePage() {
   const [form, setForm] = useState(makeEmptyForm('MONDAY'));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [cancellingSlot, setCancellingSlot] = useState<ScheduleSlot | null>(null);
+  const [cancellationDate, setCancellationDate] = useState('');
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [cancellationError, setCancellationError] = useState('');
+  const [cancelling, setCancelling] = useState(false);
 
   const load = async () => {
     const [scheduleData, mastersData, typesData] = await Promise.all([
@@ -78,6 +84,44 @@ export default function AdminSchedulePage() {
   const handleDelete = async (id: string) => {
     if (!confirm(t('confirmDelete'))) return;
     await scheduleApi.delete(id);
+    load();
+  };
+
+  const openCancellation = (slot: ScheduleSlot) => {
+    setCancellingSlot(slot);
+    setCancellationDate(getNextDateForWeekday(slot.weekday));
+    setCancellationReason('');
+    setCancellationError('');
+  };
+
+  const handleCancellation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cancellingSlot) return;
+    setCancelling(true);
+    setCancellationError('');
+    try {
+      const result = await scheduleApi.cancelOccurrence(
+        cancellingSlot.id,
+        cancellationDate,
+        cancellationReason,
+      );
+      setCancellingSlot(null);
+      await load();
+      if (result.cancelledBookings > 0) {
+        alert(`Занятие отменено. Отменено записей: ${result.cancelledBookings}.`);
+      }
+    } catch (err: any) {
+      setCancellationError(err.message);
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleRestore = async (slot: ScheduleSlot, date: string) => {
+    if (!confirm('Вернуть занятие в расписание на эту дату? Ранее отменённые записи клиентов не восстановятся автоматически.')) {
+      return;
+    }
+    await scheduleApi.restoreOccurrence(slot.id, date);
     load();
   };
 
@@ -157,11 +201,43 @@ export default function AdminSchedulePage() {
                   <td className="px-4 py-3 font-medium whitespace-nowrap">
                     {s.startTime} – {s.endTime}
                   </td>
-                  <td className="px-4 py-3">{s.classType?.titleRu}</td>
+                  <td className="px-4 py-3">
+                    <div>{s.classType?.titleRu}</div>
+                    {(s.cancellations || [])
+                      .filter((item) => item.cancellationDate.slice(0, 10) >= toLocalDateString(new Date()))
+                      .map((item) => {
+                        const date = item.cancellationDate.slice(0, 10);
+                        return (
+                          <span
+                            key={item.id}
+                            className="mt-1 mr-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs"
+                            style={{ background: '#FDECEA', color: '#c62828' }}
+                            title={item.reason || 'Занятие отменено'}
+                          >
+                            Отменено {new Date(`${date}T12:00:00`).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                            <button
+                              type="button"
+                              onClick={() => handleRestore(s, date)}
+                              className="rounded-full p-0.5 hover:bg-white/60"
+                              title="Вернуть занятие"
+                            >
+                              <RotateCcw size={11} />
+                            </button>
+                          </span>
+                        );
+                      })}
+                  </td>
                   <td className="px-4 py-3 hidden sm:table-cell text-[#6b6b6b]">{s.master?.name}</td>
                   <td className="px-4 py-3">{s.capacity}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2 justify-end">
+                      <button
+                        onClick={() => openCancellation(s)}
+                        className="p-1.5 rounded-lg hover:bg-[#FDECEA] text-[#9b9b9b] hover:text-[#c62828]"
+                        title="Отменить занятие на дату"
+                      >
+                        <CalendarX size={14} />
+                      </button>
                       <button
                         onClick={() => openEdit(s)}
                         className="p-1.5 rounded-lg hover:bg-[#F5F0E8] text-[#6b6b6b]"
@@ -306,6 +382,93 @@ export default function AdminSchedulePage() {
                   style={{ background: '#4978BC' }}
                 >
                   {saving ? '...' : t('save')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {cancellingSlot && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.4)' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setCancellingSlot(null);
+          }}
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white">
+            <div className="flex items-center justify-between p-6 border-b border-[#e0d8cc]">
+              <div>
+                <h2 className="text-xl" style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}>
+                  Отменить занятие
+                </h2>
+                <p className="mt-1 text-sm text-[#6b6b6b]">
+                  {cancellingSlot.classType?.titleRu} · {cancellingSlot.startTime}
+                </p>
+              </div>
+              <button onClick={() => setCancellingSlot(null)}>
+                <X size={20} className="text-[#9b9b9b]" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCancellation} className="p-6 space-y-4">
+              {cancellationError && (
+                <div className="p-3 rounded-xl text-sm" style={{ background: '#FDECEA', color: '#c62828' }}>
+                  {cancellationError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm text-[#6b6b6b] mb-1.5">
+                  Дата ({tWeekdays(cancellingSlot.weekday as any)})
+                </label>
+                <input
+                  type="date"
+                  required
+                  min={toLocalDateString(new Date())}
+                  value={cancellationDate}
+                  onChange={(e) => setCancellationDate(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC]"
+                />
+                <p className="mt-1.5 text-xs text-[#9b9b9b]">
+                  Можно выбрать только дату, которая приходится на этот день недели.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm text-[#6b6b6b] mb-1.5">
+                  Причина (необязательно)
+                </label>
+                <textarea
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                  maxLength={500}
+                  rows={3}
+                  placeholder="Например, мастер заболел"
+                  className="w-full resize-none px-4 py-2.5 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC]"
+                />
+              </div>
+
+              <div className="rounded-xl p-3 text-sm text-[#6b6b6b]" style={{ background: '#F5F0E8' }}>
+                Все подтверждённые записи на эту дату будут отменены, а занятия вернутся в абонементы клиентов.
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCancellingSlot(null)}
+                  className="flex-1 py-2.5 rounded-full text-sm border border-[#e0d8cc] text-[#6b6b6b]"
+                >
+                  Назад
+                </button>
+                <button
+                  type="submit"
+                  disabled={cancelling}
+                  className="flex-1 py-2.5 rounded-full text-sm text-white disabled:opacity-50"
+                  style={{ background: '#c62828' }}
+                >
+                  {cancelling ? '...' : 'Отменить занятие'}
                 </button>
               </div>
             </form>

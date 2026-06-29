@@ -5,6 +5,7 @@ import {
 import { ScheduleService } from './schedule.service';
 import { CreateSlotDto } from './dto/create-slot.dto';
 import { UpdateSlotDto } from './dto/update-slot.dto';
+import { CancelSlotDto } from './dto/cancel-slot.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -36,6 +37,20 @@ export class ScheduleController {
   @Roles(Role.ADMIN)
   update(@Param('id') id: string, @Body() dto: UpdateSlotDto) {
     return this.scheduleService.update(id, dto);
+  }
+
+  @Post(':id/cancellations')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  cancelOccurrence(@Param('id') id: string, @Body() dto: CancelSlotDto) {
+    return this.scheduleService.cancelOccurrence(id, dto);
+  }
+
+  @Delete(':id/cancellations/:date')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  restoreOccurrence(@Param('id') id: string, @Param('date') date: string) {
+    return this.scheduleService.restoreOccurrence(id, date);
   }
 
   @Delete(':id')

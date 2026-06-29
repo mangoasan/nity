@@ -127,6 +127,13 @@ export const scheduleApi = {
   create: (data: Partial<ScheduleSlot>) => api.post<ScheduleSlot>('/schedule', data),
   update: (id: string, data: Partial<ScheduleSlot>) =>
     api.put<ScheduleSlot>(`/schedule/${id}`, data),
+  cancelOccurrence: (id: string, date: string, reason?: string) =>
+    api.post<ScheduleCancellation & { cancelledBookings: number }>(
+      `/schedule/${id}/cancellations`,
+      { date, reason },
+    ),
+  restoreOccurrence: (id: string, date: string) =>
+    api.delete<{ success: boolean }>(`/schedule/${id}/cancellations/${date}`),
   delete: (id: string) => api.delete(`/schedule/${id}`),
 };
 
@@ -262,6 +269,15 @@ export interface ScheduleSlot {
   master?: Master;
   classType?: ClassType;
   _count?: { bookings: number };
+  cancellations?: ScheduleCancellation[];
+}
+
+export interface ScheduleCancellation {
+  id: string;
+  scheduleSlotId: string;
+  cancellationDate: string;
+  reason?: string;
+  createdAt: string;
 }
 
 export interface Booking {
