@@ -244,7 +244,19 @@
     "password": "Password",
     "passwordMin": "At least 6 characters",
     "emailOrPhoneRequired": "Provide email or phone number",
-    "userCreated": "User created"
+    "userCreated": "User created",
+    "adminCreateBooking": "Book client",
+    "adminBookingSlot": "Class",
+    "adminBookingClient": "Client with pass",
+    "adminBookingSubmit": "Book",
+    "adminBookingCreated": "Client booked",
+    "adminBookingRequired": "Choose a date, class and client",
+    "adminBookingFrozen": "frozen",
+    "adminBookingFrozenError": "This client has a freeze on the selected date",
+    "adminBookingNotesPlaceholder": "Admin comment",
+    "bookingCancelled": "cancelled",
+    "noClassesForDate": "No classes on this date",
+    "noUsersWithPass": "No clients with an available pass"
   },
   "common": {
     "loading": "Loading...",

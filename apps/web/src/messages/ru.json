@@ -244,7 +244,19 @@
     "password": "Пароль",
     "passwordMin": "Минимум 6 символов",
     "emailOrPhoneRequired": "Укажите email или номер телефона",
-    "userCreated": "Пользователь создан"
+    "userCreated": "Пользователь создан",
+    "adminCreateBooking": "Записать клиента",
+    "adminBookingSlot": "Занятие",
+    "adminBookingClient": "Клиент с абонементом",
+    "adminBookingSubmit": "Записать",
+    "adminBookingCreated": "Клиент записан",
+    "adminBookingRequired": "Выберите дату, занятие и клиента",
+    "adminBookingFrozen": "заморозка",
+    "adminBookingFrozenError": "У клиента заморозка на выбранную дату",
+    "adminBookingNotesPlaceholder": "Комментарий администратора",
+    "bookingCancelled": "отменено",
+    "noClassesForDate": "Нет занятий на эту дату",
+    "noUsersWithPass": "Нет клиентов с доступным абонементом"
   },
   "common": {
     "loading": "Загрузка...",

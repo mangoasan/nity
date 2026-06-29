@@ -141,6 +141,12 @@ export const scheduleApi = {
 export const bookingsApi = {
   book: (scheduleSlotId: string, bookingDate: string) =>
     api.post<Booking>('/bookings', { scheduleSlotId, bookingDate }),
+  bookForUser: (data: {
+    userId: string;
+    scheduleSlotId: string;
+    bookingDate: string;
+    notes?: string;
+  }) => api.post<Booking>('/bookings/admin', data),
   getMyBookings: () => api.get<Booking[]>('/bookings/my'),
   cancel: (id: string) => api.delete(`/bookings/${id}`),
   getAll: (filters?: BookingFilters) => {
@@ -288,6 +294,7 @@ export interface Booking {
   status: 'CONFIRMED' | 'CANCELLED' | 'ATTENDED' | 'NO_SHOW';
   notes?: string;
   classPassId?: string;
+  user?: Pick<User, 'id' | 'name' | 'email' | 'phone'>;
   scheduleSlot?: ScheduleSlot;
 }
 

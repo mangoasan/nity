@@ -244,7 +244,19 @@
     "password": "Құпия сөз",
     "passwordMin": "Кемінде 6 таңба",
     "emailOrPhoneRequired": "Email немесе телефон нөмірін енгізіңіз",
-    "userCreated": "Пайдаланушы құрылды"
+    "userCreated": "Пайдаланушы құрылды",
+    "adminCreateBooking": "Клиентті жазу",
+    "adminBookingSlot": "Сабақ",
+    "adminBookingClient": "Абонементі бар клиент",
+    "adminBookingSubmit": "Жазу",
+    "adminBookingCreated": "Клиент жазылды",
+    "adminBookingRequired": "Күнді, сабақты және клиентті таңдаңыз",
+    "adminBookingFrozen": "мұздатылған",
+    "adminBookingFrozenError": "Таңдалған күні клиенттің абонементі мұздатылған",
+    "adminBookingNotesPlaceholder": "Әкімші пікірі",
+    "bookingCancelled": "болдырылмады",
+    "noClassesForDate": "Бұл күні сабақ жоқ",
+    "noUsersWithPass": "Қолжетімді абонементі бар клиент жоқ"
   },
   "common": {
     "loading": "Жүктелуде...",

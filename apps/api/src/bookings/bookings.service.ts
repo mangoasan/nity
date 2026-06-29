@@ -243,6 +243,20 @@ export class BookingsService {
     return this.serializeBooking(booking);
   }
 
+  async createForUserByAdmin(dto: CreateBookingDto & { userId: string }) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: dto.userId },
+      select: { id: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    return this.create(dto.userId, {
+      scheduleSlotId: dto.scheduleSlotId,
+      bookingDate: dto.bookingDate,
+      notes: dto.notes,
+    });
+  }
+
   async findMyBookings(userId: string) {
     const bookings = await this.prisma.booking.findMany({
       where: { userId },

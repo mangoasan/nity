@@ -1,7 +1,21 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { bookingsApi, mastersApi, classTypesApi, Booking, Master, ClassType, BookingFilters } from '@/lib/api';
+import { CalendarPlus } from 'lucide-react';
+import {
+  bookingsApi,
+  mastersApi,
+  classTypesApi,
+  scheduleApi,
+  adminApi,
+  Booking,
+  Master,
+  ClassType,
+  BookingFilters,
+  AdminUser,
+  ScheduleSlot,
+} from '@/lib/api';
+import { toLocalDateString } from '@/lib/schedule-date';
 
 const STATUSES = ['CONFIRMED', 'CANCELLED', 'ATTENDED', 'NO_SHOW'];
 const WEEKDAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
@@ -13,6 +27,8 @@ const statusColors: Record<string, { bg: string; text: string }> = {
   NO_SHOW: { bg: '#FDECEA', text: '#c62828' },
 };
 
+const jsDayToWeekday = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+
 const emptyFilters: BookingFilters = {
   status: '',
   date: '',
@@ -22,6 +38,39 @@ const emptyFilters: BookingFilters = {
   userSearch: '',
 };
 
+const makeEmptyManualBooking = () => ({
+  userId: '',
+  scheduleSlotId: '',
+  bookingDate: toLocalDateString(new Date()),
+  notes: '',
+});
+
+function getWeekdayFromDate(date: string) {
+  if (!date) return '';
+  return jsDayToWeekday[new Date(`${date}T12:00:00`).getDay()] || '';
+}
+
+function hasBookablePass(user: AdminUser) {
+  const pass = user.activePass;
+  return Boolean(pass && (pass.type === 'unlimited' || (pass.remainingClasses ?? 0) > 0));
+}
+
+function isUserFrozenOnDate(user: AdminUser, date: string) {
+  if (!date || !user.activePass) return false;
+  return user.activePass.freezes.some((freeze) => {
+    const start = freeze.startDate.slice(0, 10);
+    const end = freeze.endDate.slice(0, 10);
+    return start <= date && end >= date;
+  });
+}
+
+function isSlotCancelledOnDate(slot: ScheduleSlot, date: string) {
+  return Boolean(
+    date &&
+      slot.cancellations?.some((cancellation) => cancellation.cancellationDate.slice(0, 10) === date),
+  );
+}
+
 export default function AdminBookingsPage() {
   const t = useTranslations('admin');
   const tBookings = useTranslations('bookings');
@@ -29,28 +78,135 @@ export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [masters, setMasters] = useState<Master[]>([]);
   const [classTypes, setClassTypes] = useState<ClassType[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [scheduleSlots, setScheduleSlots] = useState<ScheduleSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<BookingFilters>(emptyFilters);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [manualBooking, setManualBooking] = useState(makeEmptyManualBooking);
+  const [manualBookingError, setManualBookingError] = useState('');
+  const [manualBookingSuccess, setManualBookingSuccess] = useState('');
+  const [creatingManualBooking, setCreatingManualBooking] = useState(false);
 
-  const load = (f: BookingFilters = filters) => {
+  const load = async (f: BookingFilters = filters) => {
     setLoading(true);
     const active: BookingFilters = Object.fromEntries(
       Object.entries(f).filter(([, v]) => v),
     );
-    bookingsApi.getAll(active).then((d) => {
+    try {
+      const d = await bookingsApi.getAll(active);
       setBookings(d);
+    } finally {
       setLoading(false);
-    });
+    }
   };
 
   useEffect(() => {
-    Promise.all([mastersApi.getAll(), classTypesApi.getAll()]).then(([m, ct]) => {
+    Promise.all([
+      mastersApi.getAll(),
+      classTypesApi.getAll(),
+      scheduleApi.getAll(true),
+      adminApi.getUsers(),
+    ]).then(([m, ct, scheduleData, usersData]) => {
       setMasters(m);
       setClassTypes(ct);
+      setScheduleSlots(
+        Object.values(scheduleData)
+          .flat()
+          .sort((a, b) => a.startTime.localeCompare(b.startTime)),
+      );
+      setUsers(usersData);
     });
-    load(emptyFilters);
+    void load(emptyFilters);
   }, []);
+
+  const bookableUsers = useMemo(() => users.filter(hasBookablePass), [users]);
+  const availableUsersForSelectedDate = useMemo(
+    () => bookableUsers.filter((user) => !isUserFrozenOnDate(user, manualBooking.bookingDate)),
+    [bookableUsers, manualBooking.bookingDate],
+  );
+  const selectedWeekday = getWeekdayFromDate(manualBooking.bookingDate);
+  const slotsForSelectedDate = useMemo(
+    () => scheduleSlots.filter((slot) => slot.weekday === selectedWeekday),
+    [scheduleSlots, selectedWeekday],
+  );
+  const availableSlotsForSelectedDate = useMemo(
+    () => slotsForSelectedDate.filter((slot) => !isSlotCancelledOnDate(slot, manualBooking.bookingDate)),
+    [manualBooking.bookingDate, slotsForSelectedDate],
+  );
+
+  useEffect(() => {
+    setManualBooking((prev) => {
+      const nextSlotId = availableSlotsForSelectedDate.some((slot) => slot.id === prev.scheduleSlotId)
+        ? prev.scheduleSlotId
+        : availableSlotsForSelectedDate[0]?.id || '';
+      const nextUserId =
+        availableUsersForSelectedDate.some((user) => user.id === prev.userId)
+          ? prev.userId
+          : availableUsersForSelectedDate[0]?.id || '';
+
+      if (nextSlotId === prev.scheduleSlotId && nextUserId === prev.userId) {
+        return prev;
+      }
+
+      return { ...prev, scheduleSlotId: nextSlotId, userId: nextUserId };
+    });
+  }, [availableSlotsForSelectedDate, availableUsersForSelectedDate]);
+
+  const getPassLabel = (user: AdminUser) => {
+    const pass = user.activePass;
+    if (!pass) return t('passNone');
+    if (pass.type === 'unlimited') return t('passUnlimitedShort');
+    return t('passClassesCount', { count: pass.remainingClasses ?? 0 });
+  };
+
+  const getSlotLabel = (slot: ScheduleSlot) => {
+    const title = slot.classType?.titleRu || t('classType');
+    const master = slot.master?.name ? ` · ${slot.master.name}` : '';
+    return `${slot.startTime} - ${slot.endTime} · ${title}${master}`;
+  };
+
+  const handleManualBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setManualBookingError('');
+    setManualBookingSuccess('');
+
+    const selectedUser = bookableUsers.find((user) => user.id === manualBooking.userId);
+    if (!manualBooking.bookingDate || !manualBooking.scheduleSlotId || !selectedUser) {
+      setManualBookingError(t('adminBookingRequired'));
+      return;
+    }
+
+    if (isUserFrozenOnDate(selectedUser, manualBooking.bookingDate)) {
+      setManualBookingError(t('adminBookingFrozenError'));
+      return;
+    }
+
+    setCreatingManualBooking(true);
+    try {
+      await bookingsApi.bookForUser({
+        userId: manualBooking.userId,
+        scheduleSlotId: manualBooking.scheduleSlotId,
+        bookingDate: manualBooking.bookingDate,
+        notes: manualBooking.notes.trim() || undefined,
+      });
+      const active: BookingFilters = Object.fromEntries(
+        Object.entries(filters).filter(([, v]) => v),
+      );
+      const [updatedBookings, updatedUsers] = await Promise.all([
+        bookingsApi.getAll(active),
+        adminApi.getUsers(),
+      ]);
+      setBookings(updatedBookings);
+      setUsers(updatedUsers);
+      setManualBooking((prev) => ({ ...prev, notes: '' }));
+      setManualBookingSuccess(t('adminBookingCreated'));
+    } catch (err: any) {
+      setManualBookingError(err.message);
+    } finally {
+      setCreatingManualBooking(false);
+    }
+  };
 
   const handleStatus = async (id: string, status: string) => {
     setUpdating(id);
@@ -62,12 +218,12 @@ export default function AdminBookingsPage() {
   const setFilter = (key: keyof BookingFilters, val: string) => {
     const next = { ...filters, [key]: val };
     setFilters(next);
-    load(next);
+    void load(next);
   };
 
   const resetFilters = () => {
     setFilters(emptyFilters);
-    load(emptyFilters);
+    void load(emptyFilters);
   };
 
   const hasFilters = Object.values(filters).some(Boolean);
@@ -90,6 +246,129 @@ export default function AdminBookingsPage() {
           </button>
         )}
       </div>
+
+      <form
+        onSubmit={handleManualBooking}
+        className="mb-6 rounded-xl border border-[#e0d8cc] bg-white p-4 sm:p-5"
+      >
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-lg" style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}>
+            {t('adminCreateBooking')}
+          </h2>
+          {manualBookingSuccess && (
+            <span className="text-xs text-[#2e7d32]">{manualBookingSuccess}</span>
+          )}
+        </div>
+
+        {manualBookingError && (
+          <div className="mb-4 rounded-xl p-3 text-sm" style={{ background: '#FDECEA', color: '#c62828' }}>
+            {manualBookingError}
+          </div>
+        )}
+
+        <div className="grid gap-3 md:grid-cols-[150px_minmax(220px,1fr)_minmax(220px,1fr)]">
+          <div>
+            <label className="mb-1.5 block text-sm text-[#6b6b6b]">{t('date')}</label>
+            <input
+              type="date"
+              required
+              min={toLocalDateString(new Date())}
+              value={manualBooking.bookingDate}
+              onChange={(e) => {
+                setManualBooking((prev) => ({ ...prev, bookingDate: e.target.value }));
+                setManualBookingError('');
+                setManualBookingSuccess('');
+              }}
+              className="w-full rounded-xl border border-[#e0d8cc] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#4978BC]"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm text-[#6b6b6b]">{t('adminBookingSlot')}</label>
+            <select
+              required
+              value={manualBooking.scheduleSlotId}
+              onChange={(e) => {
+                setManualBooking((prev) => ({ ...prev, scheduleSlotId: e.target.value }));
+                setManualBookingError('');
+                setManualBookingSuccess('');
+              }}
+              className="w-full rounded-xl border border-[#e0d8cc] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#4978BC]"
+            >
+              {availableSlotsForSelectedDate.length === 0 && (
+                <option value="">{t('noClassesForDate')}</option>
+              )}
+              {slotsForSelectedDate.map((slot) => {
+                const cancelled = isSlotCancelledOnDate(slot, manualBooking.bookingDate);
+                return (
+                  <option key={slot.id} value={slot.id} disabled={cancelled}>
+                    {getSlotLabel(slot)}
+                    {cancelled ? ` (${t('bookingCancelled')})` : ''}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm text-[#6b6b6b]">{t('adminBookingClient')}</label>
+            <select
+              required
+              value={manualBooking.userId}
+              onChange={(e) => {
+                setManualBooking((prev) => ({ ...prev, userId: e.target.value }));
+                setManualBookingError('');
+                setManualBookingSuccess('');
+              }}
+              className="w-full rounded-xl border border-[#e0d8cc] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#4978BC]"
+            >
+              {availableUsersForSelectedDate.length === 0 && (
+                <option value="">{t('noUsersWithPass')}</option>
+              )}
+              {bookableUsers.map((user) => {
+                const frozen = isUserFrozenOnDate(user, manualBooking.bookingDate);
+                const contact = user.phone || user.email;
+                return (
+                  <option key={user.id} value={user.id} disabled={frozen}>
+                    {user.name}
+                    {contact ? ` · ${contact}` : ''} · {getPassLabel(user)}
+                    {frozen ? ` (${t('adminBookingFrozen')})` : ''}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+
+        <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <label className="mb-1.5 block text-sm text-[#6b6b6b]">{t('notes')}</label>
+            <input
+              type="text"
+              value={manualBooking.notes}
+              onChange={(e) => setManualBooking((prev) => ({ ...prev, notes: e.target.value }))}
+              maxLength={300}
+              placeholder={t('adminBookingNotesPlaceholder')}
+              className="w-full rounded-xl border border-[#e0d8cc] px-3 py-2.5 text-sm outline-none focus:border-[#4978BC]"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={
+              creatingManualBooking ||
+              !manualBooking.userId ||
+              !manualBooking.scheduleSlotId ||
+              availableUsersForSelectedDate.length === 0 ||
+              availableSlotsForSelectedDate.length === 0
+            }
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm text-white disabled:opacity-50 md:w-auto"
+            style={{ background: '#4978BC' }}
+          >
+            <CalendarPlus size={16} />
+            <span>{creatingManualBooking ? '...' : t('adminBookingSubmit')}</span>
+          </button>
+        </div>
+      </form>
 
       {/* Filters */}
       <div className="mb-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
