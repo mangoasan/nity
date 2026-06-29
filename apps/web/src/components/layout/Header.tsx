@@ -65,6 +65,24 @@ export default function Header() {
               </span>
             </Link>
 
+            <div className="flex items-center rounded-full bg-white/60 px-1.5 py-1 shadow-[inset_0_0_0_1px_rgba(229,221,200,0.7)] lg:hidden">
+              {LOCALES.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => switchLocale(l.code)}
+                  className={cn(
+                    'rounded-full px-2.5 py-1 text-[11px] font-semibold transition',
+                    locale === l.code
+                      ? 'bg-white text-[var(--accent)] shadow-sm'
+                      : 'text-[#9E978A] hover:text-[var(--dark)]',
+                  )}
+                  type="button"
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+
             <nav className="hidden items-center gap-1 rounded-full bg-white/55 p-1 shadow-[inset_0_0_0_1px_rgba(229,221,200,0.7)] lg:flex">
               {navLinks.map((link) => (
                 <Link
