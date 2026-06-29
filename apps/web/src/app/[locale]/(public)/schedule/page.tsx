@@ -5,22 +5,16 @@ export default async function SchedulePage() {
   const t = await getTranslations('schedule');
 
   return (
-    <div className="py-12 sm:py-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 md:mb-12">
-          <div
-            className="text-xs tracking-[0.3em] uppercase mb-4"
-            style={{ color: '#4978BC' }}
-          >
-            Занятия
+    <div className="bg-[var(--warm-bg)] py-8 sm:py-12 lg:py-14">
+      <div className="page-shell">
+        <div className="mb-8 max-w-3xl lg:mb-10">
+          <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+            {t('nearestClass')}
           </div>
-          <h1
-            className="text-4xl md:text-5xl mb-4"
-            style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}
-          >
+          <h1 className="font-display text-4xl leading-[1.02] text-[var(--dark)] sm:text-5xl lg:text-7xl">
             {t('title')}
           </h1>
-          <p className="text-[#6b6b6b] text-base sm:text-lg">{t('subtitle')}</p>
+          <p className="mt-4 text-base leading-7 text-[var(--muted)] sm:text-lg">{t('subtitle')}</p>
         </div>
         <ScheduleClient />
       </div>

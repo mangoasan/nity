@@ -180,8 +180,15 @@ export const adminApi = {
     password: string;
     role?: 'USER' | 'ADMIN';
   }) => api.post<AdminUser>('/admin/users', data),
-  grantClassPass: (userId: string, template: ClassPassTemplate, customCount?: number) =>
-    api.post<ClassPass>(`/admin/users/${userId}/class-pass`, { template, ...(customCount !== undefined ? { customCount } : {}) }),
+  deleteUser: (userId: string) => api.delete<{ success: boolean }>(`/admin/users/${userId}`),
+  grantClassPass: (
+    userId: string,
+    data: { durationMonths: number; isUnlimited: boolean; classCount?: number },
+  ) => api.post<ClassPass>(`/admin/users/${userId}/class-pass`, data),
+  freezeClassPass: (
+    userId: string,
+    data: { startDate: string; endDate: string; reason?: string },
+  ) => api.post<ClassPassFreeze>(`/admin/users/${userId}/class-pass/freeze`, data),
 };
 
 // Types
@@ -196,10 +203,16 @@ export interface User {
 }
 
 export interface ActivePassInfo {
+  id: string;
   type: 'unlimited' | 'finite';
   template: ClassPassTemplate;
+  durationMonths: number;
+  totalClasses?: number;
   remainingClasses?: number;
   expiresAt?: string;
+  freezeDaysTotal: number;
+  freezeDaysUsed: number;
+  freezes: ClassPassFreeze[];
 }
 
 export interface AdminUser extends User {
@@ -271,13 +284,39 @@ export interface ClassPass {
   totalClasses?: number;
   remainingClasses?: number;
   isUnlimited: boolean;
+  durationMonths: number;
+  freezeDaysTotal: number;
+  freezeDaysUsed: number;
   startsAt: string;
   expiresAt?: string;
 }
 
+export interface ClassPassFreeze {
+  id: string;
+  userId: string;
+  classPassId: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+  reason?: string;
+  createdAt: string;
+}
+
 export interface PassSummary {
-  unlimitedPass: { id: string; expiresAt?: string; template: ClassPassTemplate } | null;
-  finitePass: { id: string; remainingClasses: number; template: ClassPassTemplate } | null;
+  unlimitedPass: {
+    id: string;
+    expiresAt?: string;
+    template: ClassPassTemplate;
+    durationMonths?: number;
+  } | null;
+  finitePass: {
+    id: string;
+    remainingClasses: number;
+    totalClasses?: number;
+    expiresAt?: string;
+    template: ClassPassTemplate;
+    durationMonths?: number;
+  } | null;
   hasActivePass: boolean;
 }
 

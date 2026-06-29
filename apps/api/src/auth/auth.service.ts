@@ -142,10 +142,22 @@ export class AuthService {
 
     return {
       unlimitedPass: unlimited
-        ? { id: unlimited.id, expiresAt: unlimited.expiresAt, template: unlimited.template }
+        ? {
+            id: unlimited.id,
+            expiresAt: unlimited.expiresAt,
+            template: unlimited.template,
+            durationMonths: unlimited.durationMonths,
+          }
         : null,
       finitePass: finite
-        ? { id: finite.id, remainingClasses: finite.remainingClasses, template: finite.template }
+        ? {
+            id: finite.id,
+            remainingClasses: finite.remainingClasses,
+            totalClasses: finite.totalClasses,
+            expiresAt: finite.expiresAt,
+            template: finite.template,
+            durationMonths: finite.durationMonths,
+          }
         : null,
       hasActivePass: !!(unlimited || finite),
     };

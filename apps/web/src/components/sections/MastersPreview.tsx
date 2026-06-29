@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/navigation';
+import { ArrowRight } from 'lucide-react';
+import { Card, Pill } from '@/components/ui/nity';
 import { mastersApi, Master, resolveMediaUrl } from '@/lib/api';
 
 export default function MastersPreview() {
@@ -9,26 +11,24 @@ export default function MastersPreview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    mastersApi.getAll(true).then((data) => {
-      setMasters(data.slice(0, 3));
-      setLoading(false);
-    });
+    mastersApi
+      .getAll(true)
+      .then((data) => setMasters(data.slice(0, 4)))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-2xl overflow-hidden">
-            <div className="aspect-[3/4] bg-[#e0d8cc] animate-pulse" />
-          </div>
+      <div className="hide-scrollbar flex gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible">
+        {[1, 2, 3, 4].map((item) => (
+          <div key={item} className="h-80 w-64 shrink-0 animate-pulse rounded-[22px] bg-[#EFE7D8] lg:w-auto" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="hide-scrollbar flex gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible">
       {masters.map((master) => {
         const photoSrc = resolveMediaUrl(master.photoUrl);
 
@@ -36,43 +36,40 @@ export default function MastersPreview() {
           <Link
             key={master.id}
             href="/masters"
-            className="group block rounded-2xl overflow-hidden border border-[#e0d8cc] hover:border-[#4978BC] transition-colors"
+            className="group block w-64 shrink-0 lg:w-auto"
           >
-            <div className="relative aspect-[3/4] overflow-hidden" style={{ background: '#E8DCC4' }}>
-              {master.photoUrl ? (
-                <img
-                  src={photoSrc}
-                  alt={master.name}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-4xl text-[#4978BC] opacity-30" style={{ fontFamily: 'Georgia' }}>
+            <Card padded={false} className="h-full overflow-hidden transition group-hover:-translate-y-1">
+              <div className="relative aspect-[4/5] overflow-hidden bg-[var(--cream)]">
+                {photoSrc ? (
+                  <img
+                    src={photoSrc}
+                    alt={master.name}
+                    className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center font-display text-7xl text-[var(--accent)]/30">
                     {master.name[0]}
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="p-5">
-              <h3
-                className="text-xl mb-1"
-                style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}
-              >
-                {master.name}
-              </h3>
-              <p className="text-sm text-[#6b6b6b] mb-3 line-clamp-2">{master.shortBio}</p>
-              <div className="flex flex-wrap gap-1">
-                {master.specialties.slice(0, 2).map((s) => (
-                  <span
-                    key={s}
-                    className="text-xs px-2 py-0.5 rounded-full"
-                    style={{ background: '#E8DCC4', color: '#1a1a1a' }}
-                  >
-                    {s}
-                  </span>
-                ))}
+                  </div>
+                )}
+                {master.specialties[0] && (
+                  <div className="absolute right-3 top-3">
+                    <Pill tone="white">{master.specialties[0]}</Pill>
+                  </div>
+                )}
               </div>
-            </div>
+              <div className="p-5">
+                <h3 className="font-display text-2xl leading-[1.08] text-[var(--dark)]">
+                  {master.name}
+                </h3>
+                <p className="mt-3 line-clamp-2 text-sm leading-6 text-[var(--muted)]">
+                  {master.shortBio}
+                </p>
+                <div className="mt-4 flex items-center justify-between gap-3 text-sm font-semibold text-[var(--accent)]">
+                  <span className="truncate">{master.specialties.slice(0, 2).join(' · ')}</span>
+                  <ArrowRight size={16} className="shrink-0" />
+                </div>
+              </div>
+            </Card>
           </Link>
         );
       })}

@@ -32,6 +32,12 @@ function classStartUtc(bookingDate: Date, startTimeStr: string): Date {
   );
 }
 
+function dateOnlyUtc(value: Date): Date {
+  return new Date(
+    Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()),
+  );
+}
+
 const CANCEL_DEADLINE_MINUTES = 60;
 
 @Injectable()
@@ -97,6 +103,12 @@ export class BookingsService {
     if (!slot.isActive) throw new BadRequestException('This class is not available');
 
     const bookingDate = new Date(dto.bookingDate);
+    const classStart = classStartUtc(bookingDate, slot.startTime);
+    if (classStart <= new Date()) {
+      throw new BadRequestException(
+        'This class has already started and can no longer be booked',
+      );
+    }
 
     // Check capacity
     const confirmedCount = await this.prisma.booking.count({
@@ -115,6 +127,20 @@ export class BookingsService {
     if (!activePass) {
       throw new ForbiddenException(
         'No active class pass. Please purchase a pass to book classes.',
+      );
+    }
+
+    const frozenDate = dateOnlyUtc(bookingDate);
+    const freeze = await this.prisma.classPassFreeze.findFirst({
+      where: {
+        classPassId: activePass.id,
+        startDate: { lte: frozenDate },
+        endDate: { gte: frozenDate },
+      },
+    });
+    if (freeze) {
+      throw new BadRequestException(
+        'Your class pass is frozen on this date. Booking is unavailable.',
       );
     }
 

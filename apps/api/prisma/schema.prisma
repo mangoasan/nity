@@ -70,6 +70,7 @@ model User {
   bookings   Booking[]
   ptRequests PersonalTrainingRequest[]
   classPasses ClassPass[]
+  classPassFreezes ClassPassFreeze[]
 }
 
 model YogaMaster {
@@ -147,6 +148,9 @@ model ClassPass {
   totalClasses       Int?
   remainingClasses   Int?
   isUnlimited        Boolean           @default(false)
+  durationMonths     Int               @default(1)
+  freezeDaysTotal    Int               @default(0)
+  freezeDaysUsed     Int               @default(0)
   startsAt           DateTime          @default(now())
   expiresAt          DateTime?
   createdAt          DateTime          @default(now())
@@ -154,6 +158,24 @@ model ClassPass {
 
   user     User      @relation(fields: [userId], references: [id])
   bookings Booking[]
+  freezes  ClassPassFreeze[]
+}
+
+model ClassPassFreeze {
+  id          String    @id @default(cuid())
+  userId      String
+  classPassId String
+  startDate   DateTime
+  endDate     DateTime
+  days        Int
+  reason      String?
+  createdAt   DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classPass ClassPass @relation(fields: [classPassId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startDate, endDate])
+  @@index([classPassId, startDate, endDate])
 }
 
 model PersonalTrainingRequest {

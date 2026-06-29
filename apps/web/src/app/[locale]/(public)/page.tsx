@@ -1,93 +1,128 @@
-import { useTranslations } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
+import { ArrowRight, Mail, MapPin, Phone } from 'lucide-react';
 import HomeSchedulePreview from '@/components/sections/HomeSchedulePreview';
 import MastersPreview from '@/components/sections/MastersPreview';
 
 export default async function HomePage() {
   const t = await getTranslations('home');
-  const tNav = await getTranslations('nav');
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-        <Image
-          src="/hero-bg.png"
-          alt=""
-          fill
-          className="object-cover z-0"
-          priority
-        />
-        <div
-          className="absolute inset-0 z-0"
-          style={{ background: 'linear-gradient(135deg, rgba(232,220,196,0.75) 0%, rgba(245,240,232,0.6) 50%, rgba(232,238,247,0.55) 100%)' }}
-        />
+    <div className="bg-[var(--warm-bg)]">
+      <section className="page-shell pt-5 lg:pt-8">
+        <div className="relative min-h-[620px] overflow-hidden rounded-[32px] bg-[var(--cream)] text-white shadow-[0_24px_70px_-42px_rgba(80,56,32,0.55)] sm:rounded-[36px] lg:min-h-[680px]">
+          <Image
+            src="/about-photo.png"
+            alt="Nity Yoga Studio"
+            fill
+            priority
+            sizes="(min-width: 1024px) 1200px, 100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(24,24,27,0.76)_0%,rgba(24,24,27,0.48)_44%,rgba(24,24,27,0.16)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(to_top,rgba(24,24,27,0.48),transparent)]" />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
-          <div className="max-w-2xl">
-            <div
-              className="text-xs sm:text-sm tracking-[0.3em] uppercase mb-4 sm:mb-6"
-              style={{ color: '#4978BC' }}
-            >
-              Астана · Жошы хан, 1
+          <div className="relative z-10 flex min-h-[620px] flex-col justify-between p-5 sm:p-8 lg:min-h-[680px] lg:p-14">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full bg-white/22 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-white" />
+              {t('address')}
             </div>
-            <h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-6 sm:mb-8"
-              style={{ fontFamily: 'Georgia, serif', fontWeight: 400, color: '#1a1a1a' }}
-            >
-              {t('heroTitle')}
-            </h1>
-            <p className="text-base sm:text-lg text-[#4a4a4a] mb-8 sm:mb-10 leading-relaxed max-w-lg">
-              {t('heroSubtitle')}
-            </p>
-            <div className="flex flex-wrap gap-3 sm:gap-4">
-              <Link
-                href="/schedule"
-                className="px-6 sm:px-8 py-3 sm:py-4 rounded-full text-sm tracking-wide transition-colors"
-                style={{ background: '#4978BC', color: '#fff' }}
-              >
-                {t('heroBook')}
-              </Link>
-              <Link
-                href="/schedule"
-                className="px-6 sm:px-8 py-3 sm:py-4 rounded-full text-sm tracking-wide border transition-colors"
-                style={{ borderColor: '#4978BC', color: '#4978BC' }}
-              >
-                {t('heroSchedule')}
-              </Link>
+
+            <div className="max-w-3xl pb-2">
+              <h1 className="font-display text-5xl leading-[0.98] text-white sm:text-6xl lg:text-8xl">
+                {t('heroTitle')}
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-7 text-white/88 sm:text-lg">
+                {t('heroSubtitle')}
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/schedule"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--dark)] px-6 text-sm font-semibold text-white transition hover:bg-black"
+                >
+                  {t('heroBook')}
+                  <ArrowRight size={16} />
+                </Link>
+                <Link
+                  href="/schedule"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/22 px-6 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/30"
+                >
+                  {t('heroSchedule')}
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid max-w-3xl grid-cols-2 gap-3 rounded-[24px] border border-white/25 bg-white/24 p-4 text-white backdrop-blur-xl sm:grid-cols-4">
+              {[
+                ['540+', 'students'],
+                ['12', 'masters'],
+                ['8', 'styles'],
+                ['7', 'days'],
+              ].map(([value, label]) => (
+                <div key={label}>
+                  <div className="font-display text-3xl leading-none">{value}</div>
+                  <div className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-white/70">
+                    {label}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* About */}
-      <section className="py-16 md:py-24" style={{ background: '#fff' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+      <section className="page-shell py-12 sm:py-16 lg:py-20">
+        <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+              {t('scheduleSubtitle')}
+            </div>
+            <h2 className="font-display text-3xl leading-[1.04] text-[var(--dark)] sm:text-4xl lg:text-5xl">
+              {t('scheduleTitle')}
+            </h2>
+          </div>
+          <Link
+            href="/schedule"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)]"
+          >
+            {t('heroSchedule')}
+            <ArrowRight size={15} />
+          </Link>
+        </div>
+        <HomeSchedulePreview />
+      </section>
+
+      <section className="bg-[#F3ECDD] py-12 sm:py-16 lg:py-20">
+        <div className="page-shell">
+          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div>
-              <div
-                className="text-xs tracking-[0.3em] uppercase mb-4"
-                style={{ color: '#4978BC' }}
-              >
-                О студии
+              <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+                {t('aboutTitle')}
               </div>
-              <h2
-                className="text-3xl sm:text-4xl md:text-5xl mb-6"
-                style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}
-              >
+              <h2 className="font-display text-4xl leading-[1.02] text-[var(--dark)] sm:text-5xl lg:text-6xl">
                 {t('aboutTitle')}
               </h2>
-              <p className="text-[#6b6b6b] leading-relaxed text-base sm:text-lg">
+              <p className="mt-6 max-w-xl text-base leading-8 text-[#52525B]">
                 {t('aboutText')}
               </p>
+              <div className="mt-8 grid max-w-md grid-cols-2 gap-5">
+                <div>
+                  <div className="font-display text-4xl text-[var(--accent)]">8</div>
+                  <div className="mt-1 text-sm text-[var(--muted)]">years of practice</div>
+                </div>
+                <div>
+                  <div className="font-display text-4xl text-[var(--accent)]">320+</div>
+                  <div className="mt-1 text-sm text-[var(--muted)]">classes monthly</div>
+                </div>
+              </div>
             </div>
-            <div className="rounded-2xl overflow-hidden aspect-[4/3] relative" style={{ background: '#E8DCC4' }}>
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-[var(--cream)] shadow-[0_18px_44px_-30px_rgba(24,24,27,0.32)] lg:aspect-[4/5]">
               <Image
-                src="/about-photo.png"
-                alt="О студии Nity"
+                src="/nity1.jpeg"
+                alt="Nity Yoga Studio entrance"
                 fill
+                sizes="(min-width: 1024px) 520px, 100vw"
                 className="object-cover"
               />
             </div>
@@ -95,178 +130,114 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Schedule Preview */}
-      <section className="py-16 md:py-24" style={{ background: '#F5F0E8' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-8 md:mb-12">
-            <div>
-              <div
-                className="text-xs tracking-[0.3em] uppercase mb-4"
-                style={{ color: '#4978BC' }}
-              >
-                Расписание
-              </div>
-              <h2
-                className="text-3xl sm:text-4xl md:text-5xl"
-                style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}
-              >
-                {t('scheduleTitle')}
-              </h2>
+      <section className="page-shell py-12 sm:py-16 lg:py-20">
+        <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+              {t('mastersSubtitle')}
             </div>
-            <Link
-              href="/schedule"
-              className="mt-4 sm:mt-0 text-sm text-[#4978BC] hover:underline self-start sm:self-auto"
-            >
-              Полное расписание →
-            </Link>
+            <h2 className="font-display text-3xl leading-[1.04] text-[var(--dark)] sm:text-4xl lg:text-5xl">
+              {t('mastersTitle')}
+            </h2>
           </div>
-          <HomeSchedulePreview />
-        </div>
-      </section>
-
-      {/* Masters */}
-      <section className="py-16 md:py-24" style={{ background: '#fff' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-8 md:mb-12">
-            <div>
-              <div
-                className="text-xs tracking-[0.3em] uppercase mb-4"
-                style={{ color: '#4978BC' }}
-              >
-                Команда
-              </div>
-              <h2
-                className="text-3xl sm:text-4xl md:text-5xl"
-                style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}
-              >
-                {t('mastersTitle')}
-              </h2>
-            </div>
-            <Link
-              href="/masters"
-              className="mt-4 sm:mt-0 text-sm text-[#4978BC] hover:underline self-start sm:self-auto"
-            >
-              Все мастера →
-            </Link>
-          </div>
-          <MastersPreview />
-        </div>
-      </section>
-
-      {/* Personal Training CTA */}
-      <section className="py-16 md:py-24" style={{ background: '#1a1a1a' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div
-            className="text-xs tracking-[0.3em] uppercase mb-4"
-            style={{ color: '#E8DCC4' }}
-          >
-            Индивидуально
-          </div>
-          <h2
-            className="text-3xl sm:text-4xl md:text-5xl mb-6 text-white"
-            style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}
-          >
-            {t('ptTitle')}
-          </h2>
-          <p className="text-gray-400 text-base sm:text-lg mb-8 sm:mb-10 max-w-xl mx-auto leading-relaxed">
-            {t('ptText')}
-          </p>
           <Link
-            href="/personal-training"
-            className="inline-block px-6 sm:px-8 py-3 sm:py-4 rounded-full text-sm tracking-wide transition-colors"
-            style={{ background: '#E8DCC4', color: '#1a1a1a' }}
+            href="/masters"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)]"
           >
-            {t('ptCta')}
+            {t('mastersTitle')}
+            <ArrowRight size={15} />
           </Link>
         </div>
+        <MastersPreview />
       </section>
 
-      {/* Location */}
-      <section className="py-16 md:py-24" style={{ background: '#F5F0E8' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div>
-              <div
-                className="text-xs tracking-[0.3em] uppercase mb-4"
-                style={{ color: '#4978BC' }}
-              >
-                Адрес
-              </div>
-              <h2
-                className="text-3xl sm:text-4xl md:text-5xl mb-6 sm:mb-8"
-                style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}
-              >
-                {t('locationTitle')}
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center mt-0.5 shrink-0"
-                    style={{ background: '#4978BC' }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                      <circle cx="12" cy="10" r="3"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="font-medium text-[#1a1a1a]">Nity Yoga Studio</div>
-                    <div className="text-[#6b6b6b]">{t('address')}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: '#4978BC' }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12 19.79 19.79 0 0 1 1.08 3.39 2 2 0 0 1 3.07 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.21 8.56a16 16 0 0 0 6.22 6.22l1.32-1.32a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                    </svg>
-                  </div>
-                  <span className="text-[#6b6b6b]">{t('phone')}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: '#4978BC' }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                      <polyline points="22,6 12,13 2,6"/>
-                    </svg>
-                  </div>
-                  <span className="text-[#6b6b6b]">{t('email')}</span>
-                </div>
-              </div>
+      <section className="page-shell pb-12 sm:pb-16 lg:pb-20">
+        <div className="grid overflow-hidden rounded-[32px] bg-[var(--dark)] text-white shadow-[0_24px_70px_-44px_rgba(24,24,27,0.65)] lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="p-6 sm:p-10 lg:p-14">
+            <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--cream)]">
+              {t('ptTitle')}
             </div>
-            {/* Map placeholder */}
-            <div
-              className="rounded-2xl overflow-hidden aspect-video lg:aspect-auto lg:h-72"
-              style={{ background: '#e0d8cc' }}
+            <h2 className="font-display text-4xl leading-[1.02] text-white sm:text-5xl lg:text-6xl">
+              {t('ptTitle')}
+            </h2>
+            <p className="mt-5 max-w-xl text-base leading-7 text-white/70">
+              {t('ptText')}
+            </p>
+            <Link
+              href="/personal-training"
+              className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--cream)] px-6 text-sm font-semibold text-[var(--dark)] transition hover:bg-[#ded0b8]"
             >
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-[#4978BC] mb-2">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                      <circle cx="12" cy="10" r="3"/>
-                    </svg>
-                  </div>
-                  <div className="text-sm text-[#6b6b6b]">Астана, Жошы хан, 1</div>
-                  <a
-                    href="https://2gis.kz/astana/search/Жошы%20хан%201"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-[#4978BC] hover:underline mt-2 block"
-                  >
-                    Открыть на карте →
-                  </a>
-                </div>
-              </div>
+              {t('ptCta')}
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="relative min-h-64 bg-[linear-gradient(135deg,#26344A,#4978BC)]">
+            <Image
+              src="/nity2.PNG"
+              alt="Nity personal training"
+              fill
+              sizes="(min-width: 1024px) 420px, 100vw"
+              className="object-cover"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="page-shell pb-12 sm:pb-16 lg:pb-20">
+        <div className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
+          <div className="rounded-[28px] bg-white p-6 shadow-[0_1px_0_rgba(24,24,27,0.04),0_18px_38px_-26px_rgba(24,24,27,0.22)] sm:p-8">
+            <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+              {t('locationTitle')}
+            </div>
+            <h2 className="font-display text-4xl leading-[1.04] text-[var(--dark)]">
+              {t('locationTitle')}
+            </h2>
+            <div className="mt-8 space-y-5">
+              <ContactRow icon={<MapPin size={18} />} title="Nity Yoga Studio" text={t('address')} />
+              <ContactRow icon={<Phone size={18} />} title={t('phone')} text="9:00 - 22:00" />
+              <ContactRow icon={<Mail size={18} />} title={t('email')} text="Nity Yoga Studio" />
+            </div>
+            <a
+              href="https://2gis.kz/astana/search/Жошы%20хан%201"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border)] bg-white px-5 text-sm font-semibold text-[var(--dark)] transition hover:border-[var(--accent)]"
+            >
+              2GIS
+            </a>
+          </div>
+          <div className="relative min-h-80 overflow-hidden rounded-[28px] bg-[#D9E2F1]">
+            <div className="absolute inset-0 opacity-80 [background-image:linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px)] [background-size:72px_72px]" />
+            <div className="absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[var(--accent)]/20 bg-[var(--accent-soft)]" />
+            <div className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent)] shadow-[0_0_0_12px_rgba(73,120,188,0.14)]" />
+            <div className="absolute left-1/2 top-[calc(50%+52px)] -translate-x-1/2 rounded-full bg-[var(--dark)] px-5 py-2 text-sm font-semibold text-white">
+              {t('address')}
             </div>
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+function ContactRow({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="flex items-start gap-4">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <div className="font-semibold text-[var(--dark)]">{title}</div>
+        <div className="mt-1 text-sm leading-5 text-[var(--muted)]">{text}</div>
+      </div>
     </div>
   );
 }

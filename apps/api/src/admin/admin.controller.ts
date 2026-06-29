@@ -1,9 +1,18 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { Role, ClassPassTemplate } from '@prisma/client';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Role } from '@prisma/client';
 import {
   IsEnum,
   IsString,
@@ -12,23 +21,44 @@ import {
   IsEmail,
   MinLength,
   IsInt,
-  Min,
-  Max,
   ValidateIf,
   MaxLength,
+  IsBoolean,
+  IsDateString,
+  Min,
+  Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class GrantPassDto {
-  @IsEnum(ClassPassTemplate)
-  template: ClassPassTemplate;
-
-  @ValidateIf((o) => o.template === 'CUSTOM')
   @IsInt()
   @Min(1)
-  @Max(200)
+  @Max(120)
   @Type(() => Number)
-  customCount?: number;
+  durationMonths: number;
+
+  @IsBoolean()
+  isUnlimited: boolean;
+
+  @ValidateIf((o) => !o.isUnlimited)
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  @Type(() => Number)
+  classCount?: number;
+}
+
+class FreezePassDto {
+  @IsDateString()
+  startDate: string;
+
+  @IsDateString()
+  endDate: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(200)
+  reason?: string;
 }
 
 class CreateUserAdminDto {
@@ -79,6 +109,16 @@ export class AdminController {
 
   @Post('users/:id/class-pass')
   grantClassPass(@Param('id') id: string, @Body() dto: GrantPassDto) {
-    return this.adminService.grantClassPass(id, dto.template, dto.customCount);
+    return this.adminService.grantClassPass(id, dto);
+  }
+
+  @Post('users/:id/class-pass/freeze')
+  freezeClassPass(@Param('id') id: string, @Body() dto: FreezePassDto) {
+    return this.adminService.freezeClassPass(id, dto);
+  }
+
+  @Delete('users/:id')
+  deleteUser(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.adminService.deleteUser(id, user.id);
   }
 }

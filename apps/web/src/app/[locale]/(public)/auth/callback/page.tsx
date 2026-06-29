@@ -27,15 +27,10 @@ export default function AuthCallbackPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="flex min-h-[calc(100svh-160px)] items-center justify-center bg-[var(--warm-bg)] px-4 py-10">
       <div className="text-center">
-        <div
-          className="text-2xl tracking-[0.2em] mb-4"
-          style={{ color: '#4978BC', fontFamily: 'Georgia' }}
-        >
-          NITY
-        </div>
-        <p className="text-[#6b6b6b]">Выполняется вход...</p>
+        <div className="font-display text-4xl text-[var(--accent)]">NITY</div>
+        <p className="mt-3 text-sm text-[var(--muted)]">...</p>
       </div>
     </div>
   );

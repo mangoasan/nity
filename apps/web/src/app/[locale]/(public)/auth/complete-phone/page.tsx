@@ -6,6 +6,11 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { authApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { Alert, Button, Card, TextField } from '@/components/ui/nity';
+
+function errorMessage(err: unknown, fallback: string) {
+  return err instanceof Error ? err.message : fallback;
+}
 
 export default function CompletePhonePage() {
   const t = useTranslations('auth');
@@ -23,11 +28,9 @@ export default function CompletePhonePage() {
       router.push('/auth/signin');
       return;
     }
-    // Store token so API calls work
     localStorage.setItem('nity_token', token);
     authApi.getMe().then((user) => {
       if (user.phone) {
-        // Already has phone, just log in and redirect
         login(token, user);
         router.push('/');
       } else {
@@ -47,67 +50,55 @@ export default function CompletePhonePage() {
       const token = localStorage.getItem('nity_token')!;
       login(token, updatedUser);
       router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'Failed to save phone');
+    } catch (err: unknown) {
+      setError(errorMessage(err, 'Failed to save phone'));
     } finally {
       setLoading(false);
     }
   };
 
   if (!ready) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-2xl tracking-[0.2em] mb-4" style={{ color: '#4978BC', fontFamily: 'Georgia' }}>
-            NITY
-          </div>
-          <p className="text-[#6b6b6b]">Выполняется вход...</p>
-        </div>
-      </div>
-    );
+    return <AuthLoading />;
   }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-16 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <div className="text-3xl tracking-[0.2em] mb-4" style={{ color: '#4978BC', fontFamily: 'Georgia, serif' }}>
-            NITY
-          </div>
-          <h1 className="text-3xl" style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}>
+    <div className="flex min-h-[calc(100svh-160px)] items-center justify-center bg-[var(--warm-bg)] px-4 py-10">
+      <Card className="w-full max-w-md p-5 sm:p-8">
+        <div className="mb-8 text-center">
+          <div className="font-display text-4xl text-[var(--accent)]">NITY</div>
+          <h1 className="mt-4 font-display text-4xl leading-[1.04] text-[var(--dark)]">
             {t('completePhone')}
           </h1>
-          <p className="text-sm text-[#6b6b6b] mt-2">{t('completePhoneSubtitle')}</p>
+          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{t('completePhoneSubtitle')}</p>
         </div>
 
-        {error && (
-          <div className="mb-6 p-4 rounded-xl text-sm text-center" style={{ background: '#FDECEA', color: '#c62828' }}>
-            {error}
-          </div>
-        )}
+        {error && <Alert tone="error" className="mb-5 text-center">{error}</Alert>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm text-[#6b6b6b] mb-1.5">{t('phone')}</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder={t('phonePlaceholder')}
-              required
-              autoFocus
-              className="w-full px-4 py-3 rounded-xl border border-[#e0d8cc] text-sm outline-none focus:border-[#4978BC] transition-colors"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3.5 rounded-full text-sm text-white transition-colors disabled:opacity-50"
-            style={{ background: '#4978BC' }}
-          >
+          <TextField
+            label={t('phone')}
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder={t('phonePlaceholder')}
+            required
+            autoFocus
+          />
+          <Button type="submit" full size="lg" disabled={loading}>
             {loading ? '...' : t('completePhoneBtn')}
-          </button>
+          </Button>
         </form>
+      </Card>
+    </div>
+  );
+}
+
+function AuthLoading() {
+  return (
+    <div className="flex min-h-[calc(100svh-160px)] items-center justify-center bg-[var(--warm-bg)]">
+      <div className="text-center">
+        <div className="font-display text-4xl text-[var(--accent)]">NITY</div>
+        <p className="mt-3 text-sm text-[var(--muted)]">...</p>
       </div>
     </div>
   );
